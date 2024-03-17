@@ -1,0 +1,8 @@
+###
+GET http://localhost:8080/api/v1/items/Smart
+
+###
+GET http://localhost:8080/api/v1/items/category/Electronics
+
+###
+GET http://localhost:8080/api/v1/items/prices/10/30
