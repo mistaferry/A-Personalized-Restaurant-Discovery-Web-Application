@@ -25,7 +25,8 @@ services:
     networks:
       - odfe-net
   odfe-node:
-    image: elasticsearch:7.10.1
+    image: elasticsearch:8.8.1
+#    image: elasticsearch:7.10.1
     restart: always
     logging:
       driver: "json-file"
@@ -55,7 +56,7 @@ services:
     networks:
       - odfe-net
   kibana:
-    image: kibana:7.10.1
+    image: kibana:8.8.1
     restart: always
     logging:
       driver: "json-file"
@@ -76,7 +77,7 @@ services:
       - odfe-net
   logstash:
     user: root
-    image: docker.elastic.co/logstash/logstash-oss:7.9.1
+    image: docker.elastic.co/logstash/logstash-oss:8.8.1
     restart: always
     logging:
       driver: "json-file"
