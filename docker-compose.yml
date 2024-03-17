@@ -1,0 +1,102 @@
+version: '3.3'
+services:
+  db:
+    image: mysql:8
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: 'db'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'user'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'password'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      # <Port exposed> : <MySQL Port running inside container>
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+      # Where our data will be persisted
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/initdb/product.sql:/docker-entrypoint-initdb.d/product.sql:ro
+    networks:
+      - odfe-net
+  odfe-node:
+    image: elasticsearch:7.10.1
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1000m"
+        max-file: "10"
+    container_name: odfe-node
+    environment:
+      - discovery.type=single-node
+      - node.name=odfe-node
+      - discovery.seed_hosts=odfe-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms4096m -Xmx4096m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./docker/odfe-node/data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    networks:
+      - odfe-net
+  kibana:
+    image: kibana:7.10.1
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    container_name: odfe-kibana
+    ports:
+      - "5601:5601"
+    expose:
+      - "5601"
+    environment:
+      ELASTICSEARCH_URL: http://odfe-node:9200
+      ELASTICSEARCH_HOSTS: http://odfe-node:9200
+    depends_on:
+      - odfe-node
+    networks:
+      - odfe-net
+  logstash:
+    user: root
+    image: docker.elastic.co/logstash/logstash-oss:7.9.1
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    ports:
+      - "5044:5044"
+    depends_on:
+      - db
+      - odfe-node
+    environment:
+      - PIPELINE_WORKERS=1
+      - PIPELINE_BATCH_SIZE=125
+      - PIPELINE_BATCH_DELAY=50
+    volumes:
+      - ./docker/logstash/conf/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./docker/logstash/data:/usr/share/logstash/data
+      - ./docker/logstash/conf/mysql-connector-java-8.0.22.jar:/home/mysql-connector-java-8.0.22.jar
+    networks:
+      - odfe-net
+networks:
+  odfe-net:
