@@ -82,3 +82,11 @@ INSERT INTO db.product (product_id, name, price, brand, category) VALUES (74, 'U
 INSERT INTO db.product (product_id, name, price, brand, category) VALUES (75, 'Mega Gadget', 299.99, 'XYZ Corporation', 'Electronics');
 INSERT INTO db.product (product_id, name, price, brand, category) VALUES (76, 'Premium Appliance', 199.99, 'ABC Company', 'Appliances');
 INSERT INTO db.product (product_id, name, price, brand, category) VALUES (77, 'Turbo Gizmo', 249.99, 'XYZ Corporation', 'Electronics');
+
+create table if not exists restaurant (
+    restaurant_id  bigint,
+    name        varchar(256),
+    latitude       decimal(10,2),
+    longitude       decimal(10,2),
+    rating    int
+);
