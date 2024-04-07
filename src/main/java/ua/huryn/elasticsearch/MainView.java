@@ -1,16 +1,17 @@
 package ua.huryn.elasticsearch;
 
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.theme.lumo.LumoUtility;
+import ua.huryn.elasticsearch.view.FavouriteView;
+import ua.huryn.elasticsearch.view.MenuView;
 
-@PageTitle("Main")
-@Route("home")
-public class MainView extends HorizontalLayout {
+public class MainView extends AppLayout {
 
 //    public MainView(@Autowired RestaurantService restaurantService) throws IOException, InterruptedException, ApiException {
 //
@@ -19,21 +20,37 @@ public class MainView extends HorizontalLayout {
 //
 //    }
 
-    private TextField name;
-    private Button sayHello;
 
     public MainView() {
-        name = new TextField("Your name");
-        sayHello = new Button("Say hello");
-        sayHello.addClickListener(e -> {
-            Notification.show("Hello " + name.getValue());
-        });
-        sayHello.addClickShortcut(Key.ENTER);
+        createHeader();
+        createDrawer();
+    }
 
-        setMargin(true);
-        setVerticalComponentAlignment(Alignment.END, name, sayHello);
+    private void createHeader() {
+        H1 logo = new H1("Diplom Huryn");
+        logo.addClassNames(
+                LumoUtility.FontSize.LARGE,
+                LumoUtility.Margin.MEDIUM);
 
-        add(name, sayHello);
+        var header = new HorizontalLayout(new DrawerToggle(), logo );
+
+        header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        header.setWidthFull();
+        header.addClassNames(
+                LumoUtility.Padding.Vertical.NONE,
+                LumoUtility.Padding.Horizontal.MEDIUM);
+
+        addToNavbar(header);
+
+    }
+
+//    навігація з правої частини сторінки
+    private void createDrawer() {
+        addToDrawer(new VerticalLayout(
+//                перелік ресторанів
+                new RouterLink("Home", MenuView.class),
+//                обрані ресторани
+                new RouterLink("Favourite", FavouriteView.class)));
     }
 
 }
