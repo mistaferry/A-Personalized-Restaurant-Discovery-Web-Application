@@ -2,6 +2,8 @@ package ua.huryn.elasticsearch;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -30,7 +32,8 @@ public class MainView extends AppLayout {
         H1 logo = new H1("Diplom Huryn");
         logo.addClassNames(
                 LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.MEDIUM);
+                LumoUtility.Margin.MEDIUM,
+                LumoUtility.TextColor.ERROR);
 
         var header = new HorizontalLayout(new DrawerToggle(), logo );
 

@@ -7,12 +7,10 @@ import com.google.maps.model.LatLng;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.model.Restaurant;
-import ua.huryn.elasticsearch.repository.ItemRepository;
 import ua.huryn.elasticsearch.repository.RestaurantRepository;
-import ua.huryn.elasticsearch.service.DbInsertRepository;
+import ua.huryn.elasticsearch.service.DbInsertService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
 import java.io.FileInputStream;
@@ -23,7 +21,7 @@ import java.util.Properties;
 @Service
 @RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
-    DbInsertRepository dbInsertRepository;
+    DbInsertService dbInsertRepository;
     private final RestaurantRepository restaurantRepository;
 
 

@@ -2,6 +2,9 @@ package ua.huryn.elasticsearch.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import ua.huryn.elasticsearch.model.Item;
@@ -27,4 +30,5 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> findByPriceBetween(double low, double high) {
         return itemRepository.findByPriceBetween(low, high);
     }
+
 }
