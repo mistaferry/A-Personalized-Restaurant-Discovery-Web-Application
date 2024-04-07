@@ -7,8 +7,11 @@ import com.google.maps.model.LatLng;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.model.Restaurant;
+import ua.huryn.elasticsearch.repository.ItemRepository;
+import ua.huryn.elasticsearch.repository.RestaurantRepository;
 import ua.huryn.elasticsearch.service.DbInsertRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
@@ -21,21 +24,25 @@ import java.util.Properties;
 @RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
     DbInsertRepository dbInsertRepository;
+    private final RestaurantRepository restaurantRepository;
+
 
     LatLng location = new LatLng(50.450001, 30.523333);
     @Override
     public List<Restaurant> findByName(String name) {
-        return null;
+        return restaurantRepository.findByName(name);
     }
 
     @Override
     public List<Restaurant> findByRating(int rating) {
-        return null;
+        return restaurantRepository.findByRating(rating);
     }
+
+
 
     @Override
     public List<Restaurant> findByLatitudeAndLongitude(double latitude, double longitude) {
-        return null;
+        return restaurantRepository.findByLatitudeAndLongitude(latitude, longitude);
     }
 
     @Override
@@ -45,6 +52,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         GeoApiContext context = new GeoApiContext.Builder()
                 .apiKey(appProps.getProperty("api_key"))
                 .build();
+
         PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, location)
                 .radius(500) // Set the search radius
                 .keyword("restaurant") // Optional: specify a keyword to filter results
@@ -58,6 +66,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         return response;
     }
 
+    @Override
+    public List<Restaurant> getAll() throws IOException, InterruptedException, ApiException {
+        addRestaurantsToDb();
+        return restaurantRepository.findAll();
+    }
+
+    @Override
     public void addRestaurantsToDb() throws IOException, InterruptedException, ApiException {
         PlacesSearchResponse response = getAllRestaurantsFromApi();
         for (PlacesSearchResult result : response.results) {
@@ -66,7 +81,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             restaurant.setLatitude(location.lat);
             restaurant.setLongitude(location.lng);
             restaurant.setRating((int) result.rating);
+            dbInsertRepository.insert(restaurant);
         }
-
     }
 }

@@ -15,4 +15,8 @@ public interface RestaurantService {
     List<Restaurant> findByLatitudeAndLongitude(double latitude, double longitude);
 
     PlacesSearchResponse getAllRestaurantsFromApi() throws IOException, InterruptedException, ApiException;
+
+    List<Restaurant> getAll() throws IOException, InterruptedException, ApiException;
+
+    void addRestaurantsToDb() throws IOException, InterruptedException, ApiException;
 }
