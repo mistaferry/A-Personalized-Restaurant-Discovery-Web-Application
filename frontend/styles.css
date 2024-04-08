@@ -6,3 +6,12 @@ a[highlight] {
 .left-hor-sec{
     background: aqua;
 }
+
+.checkbox-btn-group {
+    display: inline-block;
+}
+
+.checkbox-btn.active {
+    background-color: cornflowerblue;
+    color: white;
+}
