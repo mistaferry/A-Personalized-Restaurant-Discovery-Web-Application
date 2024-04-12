@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @Document(indexName = "restaurant")
-public class Restaurant {
+public class RestaurantModel {
     @Id
     private int id;
     @Field(type = FieldType.Text, name = "name")

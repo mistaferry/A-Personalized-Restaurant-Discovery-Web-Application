@@ -1,9 +1,7 @@
 package ua.huryn.elasticsearch.repository;
 
 import java.util.List;
-
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-
 import ua.huryn.elasticsearch.model.Item;
 
 public interface ItemRepository extends ElasticsearchRepository<Item, Integer> {

@@ -1,11 +1,10 @@
 package ua.huryn.elasticsearch.view;
 
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Section;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -13,9 +12,7 @@ import com.vaadin.flow.router.Route;
 import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 @PageTitle("Menu")
@@ -63,12 +60,10 @@ public class MenuView extends VerticalLayout {
         filtersDiv.addClassNames("w-25 p-2 mx-1");
 
         Div category = new Div();
-//        category.addClassNames("d-flex flex-wrap justify-content-between align-items-center"); // Додано flex-wrap та align-items-center
         category.addClassNames("checkbox-btn-group");
-        category.add("Category");
 
-        Div buttonsContainer = new Div(); // Створення контейнера для кнопок
-        buttonsContainer.addClassNames("d-flex flex-wrap border justify-content-between"); // Додано flex-wrap для переносу кнопок
+        Div buttonsContainer = new Div();
+        buttonsContainer.addClassNames("d-flex flex-wrap justify-content-between");
         ArrayList<Button> buttonList = new ArrayList<>();
         Button button1 = new Button("Ukrainian");
         Button button2 = new Button("French");
@@ -92,23 +87,36 @@ public class MenuView extends VerticalLayout {
                     button.addClassName("active");
                 }
             });
-//            button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//            button.setAutofocus(true);
-            buttonsContainer.add(button); // Додавання кнопок до контейнера
+            buttonsContainer.add(button);
         }
-
-        category.add(buttonsContainer); // Додавання контейнера кнопок до категорії
-
+        category.add(buttonsContainer);
         filtersDiv.add(category);
-
 
         return filtersDiv;
     }
 
     private Div createMenuDiv() {
         Div menuDiv = new Div();
-        menuDiv.add(new Text("uy76tre"));
-        menuDiv.addClassNames("w-75 bg-danger p-2");
+        menuDiv.addClassNames("w-75 p-2 mx-1 d-flex flex-wrap justify-content-around checkbox-btn-group");
+        menuDiv.getStyle().set("gap", "20px"); // Встановлення прогалини в 4px між Div
+
+        ArrayList<Div> restaurants = new ArrayList<>();
+        Div restaurant1 = new Div();
+        Div restaurant2 = new Div();
+        Div restaurant3 = new Div();
+        Div restaurant4 = new Div();
+        restaurants.add(restaurant1);
+        restaurants.add(restaurant2);
+        restaurants.add(restaurant3);
+        restaurants.add(restaurant4);
+
+        for (Div div : restaurants) {
+            div.addClassNames("w-25 bg-info");
+            menuDiv.add(div);
+        }
+
+
+
 
         return menuDiv;
     }

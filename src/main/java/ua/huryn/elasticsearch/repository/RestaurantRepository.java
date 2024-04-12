@@ -5,15 +5,15 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
-import ua.huryn.elasticsearch.model.Restaurant;
+import ua.huryn.elasticsearch.model.RestaurantModel;
 
-public interface RestaurantRepository extends ElasticsearchRepository<Restaurant, Integer> {
-    List<Restaurant> findByName(String name);
+public interface RestaurantRepository extends ElasticsearchRepository<RestaurantModel, Integer> {
+    List<RestaurantModel> findByName(String name);
 
-    List<Restaurant> findByRating(int rating);
+    List<RestaurantModel> findByRating(int rating);
 
-    List<Restaurant> findByLatitudeAndLongitude(double latitude, double longitude);
+    List<RestaurantModel> findByLatitudeAndLongitude(double latitude, double longitude);
 
     @NotNull
-    List<Restaurant> findAll();
+    List<RestaurantModel> findAll();
 }
