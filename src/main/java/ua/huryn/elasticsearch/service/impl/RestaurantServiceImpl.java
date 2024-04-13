@@ -1,5 +1,7 @@
 package ua.huryn.elasticsearch.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
@@ -19,7 +21,9 @@ import ua.huryn.elasticsearch.repository1.RestaurantDbRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -54,42 +58,39 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public void addDataToDb(){
-        try {
-            List<LatLng> locationsList = getLocationFromJson();
-            Properties appProps = new Properties();
-            appProps.load(new FileInputStream("src/main/resources/api.properties"));
-            GeoApiContext context = new GeoApiContext.Builder()
-                    .apiKey(appProps.getProperty("api_key"))
-                    .build();
+    public void addDataToDb() throws IOException, InterruptedException, ApiException {
+        List<LatLng> locationsList = getLocationFromJson();
+        Properties appProps = new Properties();
+        appProps.load(new FileInputStream("src/main/resources/api.properties"));
+        GeoApiContext context = new GeoApiContext.Builder()
+                .apiKey(appProps.getProperty("api_key"))
+                .build();
 
-            for (LatLng loc: locationsList){
-                PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
-                        .radius(1000)
-                        .keyword("restaurant")
-                        .language("en")
-                        .await();
+        for (LatLng loc: locationsList){
+            PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
+                    .radius(1000)
+                    .keyword("restaurant")
+                    .language("en")
+                    .await();
 
-                PlacesSearchResult[] res = response.results;
-                for (int i = 0; i < res.length; i++) {
-                    PlacesSearchResult r = res[i];
-                    Restaurant existsRestaurant = restaurantDbRepository.findByPlace_id(r.placeId);
-                    if(existsRestaurant == null) {
-                        Restaurant restaurant = getItem(r, context);
-                        restaurantDbRepository.save(restaurant);
-                    }
+            PlacesSearchResult[] res = response.results;
+            for (int i = 0; i < res.length; i++) {
+                PlacesSearchResult r = res[i];
+                Object existsObject = restaurantDbRepository.findByPlace_id(r.placeId);
+                if(existsObject == null) {
+                    Restaurant restaurant = getItem(r, context);
+                    restaurantDbRepository.save(restaurant);
                 }
             }
-        } catch (IOException | ApiException | InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    private List<LatLng> getLocationFromJson(){
+    private List<LatLng> getLocationFromJson() {
         List<LatLng> locationsList = new ArrayList<>();
+        String path = "src/main/resources/json_data/locations.json";
         try {
             String content = "";
-            content = new String(Files.readAllBytes(Paths.get("src/main/resources/json_data/locations.json")));
+            content = new String(Files.readAllBytes(Paths.get(path)));
             JSONArray jsonArray = new JSONArray(content);
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -98,8 +99,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 LatLng l = new LatLng(lat, lng);
                 locationsList.add(l);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        }catch (IOException e){
+            System.err.println("Немає доступу до файлу: " + path);
         }
         return locationsList;
     }
@@ -148,10 +149,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         for (int j = 0; j < types.length; j++) {
             String typeName = types[j];
-            Category existingCategory = categoryDbRepository.findByName(typeName);
+            Object existingCategory = categoryDbRepository.findByName(typeName);
 
             if (existingCategory != null) {
-                categoriesList.add(existingCategory);
+                Category category = categoryDbRepository.findByName(typeName);
+                categoriesList.add(category);
             } else {
                 Category newCategory = new Category();
                 newCategory.setName(typeName);
@@ -160,5 +162,52 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
         }
         return categoriesList;
+    }
+
+    @Override
+    public void addApiDataToFile(){
+        try {
+            List<Restaurant> restaurants = restaurantDbRepository.getAll();
+
+            ObjectMapper mapper = new ObjectMapper();
+
+            File file = new File("src/main/resources/json_data/restaurants.json");
+
+            // Зберегти всі ресторани в файл у форматі JSON
+            mapper.writeValue(file, restaurants);
+
+            System.out.println("Дані збережено у файл restaurants.json");
+        } catch (Exception e) {
+            System.err.println("Неможливо зберегти дані в файл.");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void addDataFromFileToDb(){
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            // Read JSON from file into a list of Restaurant objects
+            List<Restaurant> restaurants = objectMapper.readValue(new File("src/main/resources/json_data/restaurants.json"),
+                    new TypeReference<List<Restaurant>>() {});
+
+            // Do something with the list of restaurants
+            for (Restaurant restaurant : restaurants) {
+                List<Category> categories = restaurant.getCategories();
+                for (Category category: categories){
+                    Category existsCategory = categoryDbRepository.findByName(category.getName());
+                    if(existsCategory == null){
+                        categoryDbRepository.save(category);
+                    }
+                }
+            }
+
+            restaurantDbRepository.saveAll(restaurants);
+            System.out.println("Успішно отримано дані з файлу");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Неможливо отримані дані з файлу.");
+        }
     }
 }

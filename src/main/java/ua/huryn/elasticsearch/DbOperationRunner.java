@@ -1,5 +1,6 @@
 package ua.huryn.elasticsearch;
 
+import com.google.maps.errors.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,16 @@ public class DbOperationRunner implements CommandLineRunner {
     RestaurantService restaurantService = new RestaurantServiceImpl();
 
     @Override
-    public void run(String... args) throws Exception {
-        restaurantService.addDataToDb();
+    public void run(String... args){
+        try {
+            restaurantService.addDataToDb();
+            restaurantService.addApiDataToFile();
+        } catch (Exception e) {
+            System.err.println("Неможливо отримани дані за допомогою Api.\n" +
+                    "Будемо отримувати дані з файла");
+//            e.printStackTrace();
+        restaurantService.addDataFromFileToDb();
+        }
     }
 }
 
