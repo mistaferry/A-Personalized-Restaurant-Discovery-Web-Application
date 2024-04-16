@@ -7,8 +7,8 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "ua.huryn.elasticsearch.repository")
-@EnableJpaRepositories(basePackages = "ua.huryn.elasticsearch.repository1")
+@EnableElasticsearchRepositories(basePackages = "ua.huryn.elasticsearch.repository.elasticsearch")
+@EnableJpaRepositories(basePackages = "ua.huryn.elasticsearch.repository.db")
 public class ClientConfig extends ElasticsearchConfiguration {
     @Override
     public ClientConfiguration clientConfiguration() {

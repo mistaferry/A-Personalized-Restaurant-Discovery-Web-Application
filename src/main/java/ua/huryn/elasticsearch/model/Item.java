@@ -11,7 +11,8 @@ import lombok.Data;
 @Document(indexName = "product")
 public class Item {
     @Id
-    private int id;
+    @Field(type = FieldType.Long, name = "product_id")
+    private Long id;
     @Field(type = FieldType.Text, name = "name")
     private String name;
     @Field(type = FieldType.Double, name = "price")

@@ -10,4 +10,6 @@ public interface ItemService {
     List<Item> findByCategory(String category);
 
     List<Item> findByPriceBetween(double low, double high);
+
+    Iterable<Item> findAll();
 }

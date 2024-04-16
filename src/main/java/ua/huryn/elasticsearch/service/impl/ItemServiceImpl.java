@@ -2,13 +2,10 @@ package ua.huryn.elasticsearch.service.impl;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import ua.huryn.elasticsearch.model.Item;
-import ua.huryn.elasticsearch.repository.ItemRepository;
+import ua.huryn.elasticsearch.repository.elasticsearch.ItemRepository;
 import ua.huryn.elasticsearch.service.ItemService;
 import lombok.RequiredArgsConstructor;
 
@@ -31,4 +28,8 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findByPriceBetween(low, high);
     }
 
+    @Override
+    public Iterable<Item> findAll() {
+        return itemRepository.findAll();
+    }
 }

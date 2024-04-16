@@ -1,4 +1,4 @@
-package ua.huryn.elasticsearch.repository1;
+package ua.huryn.elasticsearch.repository.db;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
