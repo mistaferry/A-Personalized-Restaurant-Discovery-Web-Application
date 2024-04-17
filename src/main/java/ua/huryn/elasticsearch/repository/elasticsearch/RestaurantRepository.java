@@ -22,6 +22,10 @@ public interface RestaurantRepository extends ElasticsearchRepository<Restaurant
 
     List<RestaurantModel> findByLatitudeAndLongitude(double latitude, double longitude);
 
+    List<RestaurantModel> findByPriceLevel(int price_level);
+
+    List<RestaurantModel> findByRatingAndPriceLevel(double rating, int price_level);
+
     @NotNull
     @Override
     List<RestaurantModel> findAll();

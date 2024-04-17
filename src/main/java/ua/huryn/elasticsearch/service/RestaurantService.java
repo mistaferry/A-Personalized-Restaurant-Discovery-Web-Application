@@ -14,7 +14,15 @@ public interface RestaurantService {
 
     List<RestaurantModel> findByLatitudeAndLongitude(double latitude, double longitude);
 
-    List<RestaurantModel> getAll();
+    List<RestaurantModel> findByPrice_level(int priceLevel);
+
+    List<RestaurantModel> findByRatingAndPrice_level(double rating, int priceLevel);
+
+//    List<RestaurantModel> getAll();
+
+    List<RestaurantModel> getFiltered(List<Integer> rating, List<Integer> price);
+
+
 
 //    List<RestaurantModel> findByCategory(Category category);
 

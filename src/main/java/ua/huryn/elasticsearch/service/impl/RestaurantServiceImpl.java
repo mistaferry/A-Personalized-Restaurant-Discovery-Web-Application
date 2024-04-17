@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.entity.Category;
 import ua.huryn.elasticsearch.entity.Restaurant;
@@ -24,7 +23,6 @@ import ua.huryn.elasticsearch.service.RestaurantService;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.File;
-import java.math.MathContext;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -42,9 +40,21 @@ public class RestaurantServiceImpl implements RestaurantService {
     public List<RestaurantModel> findByRating(double rating) {
         List<RestaurantModel> list = new ArrayList<>();
 
+        double[] ratingRange = calculateRatingRange(rating);
+        double startRating = ratingRange[0];
+        double endRating = ratingRange[1];
+
+        for (double i = startRating; i <= endRating; i += 0.1) {
+            list.addAll(restaurantRepository.findByRating(i));
+        }
+        return list;
+    }
+
+    private double[] calculateRatingRange(double rating) {
         double startRating = 0;
         double endRating = 0;
         long key = Math.round(rating);
+
         switch ((int) key) {
             case 5:
                 startRating = 4.5;
@@ -70,10 +80,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 break;
         }
 
-        for (double i = startRating; i <= endRating; i += 0.1) {
-            list.addAll(restaurantRepository.findByRating(i));
-        }
-        return list;
+        return new double[]{startRating, endRating};
     }
 
     @Override
@@ -81,16 +88,69 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.findByName(name);
     }
 
-
-
     @Override
     public List<RestaurantModel> findByLatitudeAndLongitude(double latitude, double longitude) {
         return restaurantRepository.findByLatitudeAndLongitude(latitude, longitude);
     }
 
     @Override
-    public List<RestaurantModel> getAll() {
-        return restaurantRepository.findAll();
+    public List<RestaurantModel> findByPrice_level(int priceLevel) {
+        return new ArrayList<>(restaurantRepository.findByPriceLevel(priceLevel));
+    }
+
+    @Override
+    public List<RestaurantModel> findByRatingAndPrice_level(double rating, int priceLevel) {
+        List<RestaurantModel> list = new ArrayList<>();
+
+        double[] ratingRange = calculateRatingRange(rating);
+        double startRating = ratingRange[0];
+        double endRating = ratingRange[1];
+
+        for (double i = startRating; i <= endRating; i += 0.1) {
+            list.addAll(restaurantRepository.findByRatingAndPriceLevel(i, priceLevel));
+        }
+        return list;
+    }
+
+    @Override
+    public List<RestaurantModel> getFiltered(List<Integer> rating, List<Integer> price) {
+        List<RestaurantModel> filteredData = new ArrayList<>();
+        if((rating!= null && !rating.isEmpty()) &&
+                (price!= null && !price.isEmpty())){
+            filteredByRatingAndPriceLevel(rating, price, filteredData);
+        }else{
+            filteredByRating(rating, filteredData);
+            filteredByPriceLevel(price, filteredData);
+        }
+        if(filteredData.isEmpty()){
+            filteredData.addAll(findByRating(4.5));
+        }
+        return filteredData;
+    }
+
+    private void filteredByPriceLevel(List<Integer> price, List<RestaurantModel> filteredData) {
+        if(price != null && !price.isEmpty()){
+            for (Integer priceLevel: price){
+                filteredData.addAll(findByPrice_level(priceLevel));
+            }
+        }
+    }
+
+    private void filteredByRating(List<Integer> rating, List<RestaurantModel> filteredData) {
+        if(rating != null && !rating.isEmpty()){
+            for (Integer rate: rating){
+                filteredData.addAll(findByRating(rate));
+            }
+        }
+    }
+
+    private void filteredByRatingAndPriceLevel(List<Integer> rating, List<Integer> price, List<RestaurantModel> filteredData) {
+        for (Integer rate: rating){
+            for (Integer p: price){
+                List<RestaurantModel> filteredByBoth = findByRatingAndPrice_level(rate, p);
+                filteredData.addAll(filteredByBoth);
+            }
+        }
     }
 
 //    @Override

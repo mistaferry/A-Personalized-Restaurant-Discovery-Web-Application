@@ -61,10 +61,10 @@
 }
 
 .info {
-    border: 1px solid #000; /* Just for demonstration */
+    border: 1px solid #000;
     background-color: #06b535;
-    padding: 10px; /* Add padding */
-    box-sizing: border-box; /* Include padding and border in the width */
+    padding: 10px;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
 }

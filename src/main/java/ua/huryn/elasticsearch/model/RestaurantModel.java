@@ -26,7 +26,7 @@ public class RestaurantModel {
     @Field(type = FieldType.Double, name = "rating")
     private Double rating;
     @Field(type = FieldType.Integer, name = "price_level")
-    private int price_level;
+    private int priceLevel;
     @Field(type = FieldType.Text, name = "website")
     private String website;
     @Field(type = FieldType.Text, name = "photo_ref")
