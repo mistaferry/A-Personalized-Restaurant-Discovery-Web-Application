@@ -1,6 +1,6 @@
 .basic{
-    padding: 2px;
-    margin: 1px;
+    /*padding: 2px;*/
+    /*margin: 1px;*/
     display: flex;
     justify-content: center;
 }
@@ -26,10 +26,17 @@
     width: 100%;
 }
 
+.menu-div{
+    /*width: 75%;*/
+    /*width: auto;*/
+    display: inline-block;
+}
+
 .filters{
-    width: 25%;
-    margin: 1px;
-    padding: 2px;
+    width: 20%;
+    /*margin: 1px;*/
+    /*padding: 2px;*/
+    display: inline-block
 }
 
 .left-hor-sec{
@@ -40,17 +47,15 @@
     display: inline-block;
 }
 
-.main_div{
-    width:150px;
-}
-.main_div.active {
-    background-color: cornflowerblue;
-    color: white;
+.two-column-checkgroup {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px; /* розрив між стовпцями */
 }
 
 .item_div{
-    width: 250px;
-    height: 180px;
+    width: 25%;
+    /*height: 180px;*/
 }
 
 .image{
@@ -82,7 +87,7 @@
 }
 
 .gap{
-    gap: 30px;
+    /*gap: 10%;*/
 }
 
 .category-container{

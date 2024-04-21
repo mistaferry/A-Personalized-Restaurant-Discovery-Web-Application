@@ -24,6 +24,8 @@ public interface RestaurantRepository extends ElasticsearchRepository<Restaurant
 
     List<RestaurantModel> findByPriceLevel(int price_level);
 
+    List<RestaurantModel> findByCuisineType(String cuisineType);
+
     List<RestaurantModel> findByRatingAndPriceLevel(double rating, int price_level);
 
     @NotNull

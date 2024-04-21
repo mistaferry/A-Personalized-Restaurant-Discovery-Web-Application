@@ -14,7 +14,7 @@ public class Restaurant {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "restaurant_id")
-    private long id;
+    private Long id;
     @Column(name = "place_id")
     private String place_id;
     @Column(name = "name")
@@ -33,6 +33,8 @@ public class Restaurant {
     private String website;
     @Column(name = "photo_ref")
     private String photo_ref;
+    @Column(name = "cuisine_type")
+    private String cuisine_type;
     @OneToMany
     @JoinTable(
             name = "restaurant_category",
