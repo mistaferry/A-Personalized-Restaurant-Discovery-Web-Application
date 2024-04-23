@@ -389,28 +389,28 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         if (queryParams.containsKey(key) && !queryParams.get(key).isEmpty()) {
             String param = queryParams.get(key).get(0);
             if (param != null && !param.trim().isEmpty()) {
-                return Set.of(param.trim().split(",\\s*")); // split by commas, ignoring spaces
+                return Set.of(param.trim().split(",\\s*"));
             }
         }
-        return Collections.emptySet(); // if the key doesn't exist or the value is empty
+        return Collections.emptySet();
     }
 
     Set<Integer> getIntegerSetFromQueryParameters(Map<String, List<String>> queryParams, String key) {
         Set<String> stringSet = getStringSetFromQueryParameters(queryParams, key);
         if (stringSet.isEmpty()) {
-            return Collections.emptySet(); // if the set is empty, return empty
+            return Collections.emptySet();
         }
 
         return stringSet.stream()
-                .filter(s -> s != null && !s.trim().isEmpty()) // filter out null/empty strings
+                .filter(s -> s != null && !s.trim().isEmpty())
                 .map(s -> {
                     try {
                         return Integer.parseInt(s.trim());
                     } catch (NumberFormatException e) {
-                        return null; // if conversion fails, return null
+                        return null;
                     }
                 })
-                .filter(Objects::nonNull) // filter out any null values
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
