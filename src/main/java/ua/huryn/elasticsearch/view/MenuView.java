@@ -10,28 +10,31 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.*;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
 import ua.huryn.elasticsearch.model.RestaurantModel;
-import ua.huryn.elasticsearch.service.ItemService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @PageTitle("Menu")
 @Route(value = "", layout = MainView.class)
 @CssImport("styles.css")
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
-public class MenuView extends VerticalLayout {
+public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final RestaurantService restaurantService;
     CheckboxGroup<Integer> ratingCheckbox = new CheckboxGroup<>();
     CheckboxGroup<Integer> priceLevelCheckbox = new CheckboxGroup<>();
@@ -65,6 +68,7 @@ public class MenuView extends VerticalLayout {
     }
 
     private void updateMenu() {
+        updateUrlWithFilters();
         menuDiv.removeAll();
         menuDiv.add(createMenuDiv());
     }
@@ -140,7 +144,7 @@ public class MenuView extends VerticalLayout {
         Div name = new Div();
 
         name.addClassNames("info flex-column width-60");
-        int end = Math.min(25, restaurant.getName().length());
+        int end = Math.min(24, restaurant.getName().length());
         String route  = RouteConfiguration.forSessionScope()
                 .getUrl(RestaurantView.class, restaurant.getRestaurantId());
         Anchor restName = new Anchor(route, restaurant.getName().substring(0, end));
@@ -197,7 +201,6 @@ public class MenuView extends VerticalLayout {
     @NotNull
     private Div cuisineTypeFilter() {
         List<String> cuisineTypes = restaurantService.getCuisineTypeFromJson();
-
         Div cuisineTypeDiv = new Div();
         cuisineTypeDiv.addClassNames("main-div");
 
@@ -323,6 +326,92 @@ public class MenuView extends VerticalLayout {
         Set<Integer> selectedItems = routeCheckbox.getValue();
 //        System.out.println("route - " + selectedItems);
         return new ArrayList<>(selectedItems);
+    }
+
+    private void updateUrlWithFilters() {
+        List<String> selectedCuisine = cuisineCheckboxListener();
+        List<Integer> selectedPrices = priceCheckboxListener();
+        List<Integer> selectedRating = ratingCheckboxListener();
+        List<Integer> selectedRoutes = routeCheckboxListener();
+
+        List<String> prices = new ArrayList<>();
+        for (int i = 0; i < selectedPrices.size(); i++) {
+            prices.add(selectedPrices.get(i).toString());
+        }
+        List<String> rating = new ArrayList<>();
+        for (int i = 0; i < selectedRating.size(); i++) {
+            rating.add(selectedRating.get(i).toString());
+        }
+        List<String> routes = new ArrayList<>();
+        for (int i = 0; i < selectedRoutes.size(); i++) {
+            routes.add(selectedRoutes.get(i).toString());
+        }
+
+        String cuisinesQuery = String.join(",", selectedCuisine);
+        String priceQuery = String.join(",", prices);
+        String ratingQuery = String.join(",", rating);
+        String routesQuery = String.join(",", routes);
+        // Create the query parameter for cuisines and price
+        String query = "route=" + routesQuery +
+                "&price=" + priceQuery + "&rating=" + ratingQuery + "&cuisine=" + cuisinesQuery;
+        JsonObject stateData = Json.createObject();
+
+        // Update the URL with the new query parameters without reloading the page
+        UI.getCurrent().getPage().getHistory().replaceState(stateData, "?" + query);
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        var queryParameters = event.getLocation().getQueryParameters().getParameters();
+
+        Set<String> cuisineSet = getStringSetFromQueryParameters(queryParameters, "cuisine");
+        if (!cuisineSet.isEmpty()) {
+            cuisineCheckbox.setValue(cuisineSet);
+        }
+
+        Set<Integer> ratingSet = getIntegerSetFromQueryParameters(queryParameters, "rating");
+        if (!ratingSet.isEmpty()) {
+            ratingCheckbox.setValue(ratingSet);
+        }
+
+        Set<Integer> priceLevelSet = getIntegerSetFromQueryParameters(queryParameters, "price");
+        if (!priceLevelSet.isEmpty()) {
+            priceLevelCheckbox.setValue(priceLevelSet);
+        }
+
+        Set<Integer> routeSet = getIntegerSetFromQueryParameters(queryParameters, "route");
+        if (!routeSet.isEmpty()) {
+            routeCheckbox.setValue(routeSet);
+        }
+    }
+
+    Set<String> getStringSetFromQueryParameters(Map<String, List<String>> queryParams, String key) {
+        if (queryParams.containsKey(key) && !queryParams.get(key).isEmpty()) {
+            String param = queryParams.get(key).get(0);
+            if (param != null && !param.trim().isEmpty()) {
+                return Set.of(param.trim().split(",\\s*")); // split by commas, ignoring spaces
+            }
+        }
+        return Collections.emptySet(); // if the key doesn't exist or the value is empty
+    }
+
+    Set<Integer> getIntegerSetFromQueryParameters(Map<String, List<String>> queryParams, String key) {
+        Set<String> stringSet = getStringSetFromQueryParameters(queryParams, key);
+        if (stringSet.isEmpty()) {
+            return Collections.emptySet(); // if the set is empty, return empty
+        }
+
+        return stringSet.stream()
+                .filter(s -> s != null && !s.trim().isEmpty()) // filter out null/empty strings
+                .map(s -> {
+                    try {
+                        return Integer.parseInt(s.trim());
+                    } catch (NumberFormatException e) {
+                        return null; // if conversion fails, return null
+                    }
+                })
+                .filter(Objects::nonNull) // filter out any null values
+                .collect(Collectors.toSet());
     }
 
     private List<RestaurantModel> getFilteredRestaurantModelList() {
