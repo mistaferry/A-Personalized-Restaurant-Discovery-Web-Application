@@ -1,36 +1,49 @@
 package ua.huryn.elasticsearch.service.impl;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.maps.DistanceMatrixApi;
-import com.google.maps.DistanceMatrixApiRequest;
-import com.google.maps.GeoApiContext;
-import com.google.maps.PlacesApi;
+import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
 import com.google.maps.model.*;
-import com.google.maps.routing.v2.*;
 import lombok.RequiredArgsConstructor;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.stereotype.Service;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.stereotype.Service;import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.entity.Category;
 import ua.huryn.elasticsearch.entity.Restaurant;
 import ua.huryn.elasticsearch.model.RestaurantModel;
-import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
+import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
-import java.time.Duration;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +97,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
         return new double[]{startRating, endRating};
+    }
+
+    @Override
+    public List<RestaurantModel> findAllByRestaurantId(int id) {
+        return restaurantRepository.findAllByRestaurantId(id);
     }
 
     @Override
@@ -163,15 +181,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     GeoApiContext context = getGeoApiContext();
                     String location = splitMatcher.group(1).trim();
                     String numValue = splitMatcher.group(2).trim();
-
-//                    Pattern GEO_COORDINATE_PATTERN = Pattern.compile("[0-9.]\\s[0-9.]");
-//                    Matcher geoMatcher = GEO_COORDINATE_PATTERN.matcher(location);
-//
-//                    if (geoMatcher.matches()) {
                     filtered = getRestaurantsByAddress(context, location, numValue, filtered, modes);
-//                    } else {
-//                        filtered = getRestaurantsByAddress(context, location, numValue, filtered, modes);
-//                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -349,7 +359,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     public List<String> getCuisineTypeFromJson() {
         List<String> cuisineTypeList = new ArrayList<>();
-        String path = "src/main/resources/json_data/cuisine_types.json";
+        String path = "src/main/resources/db_data/cuisine_types.json";
         try {
             String content = "";
             content = new String(Files.readAllBytes(Paths.get(path)));
@@ -367,7 +377,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     private List<LatLng> getLocationFromJson() {
         List<LatLng> locationsList = new ArrayList<>();
-        String path = "src/main/resources/json_data/locations.json";
+        String path = "src/main/resources/db_data/locations.json";
         try {
             String content = "";
             content = new String(Files.readAllBytes(Paths.get(path)));
@@ -396,9 +406,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setCuisine_type(cuisine);
         Photo[] photos = restaurantResult.photos;
         if(photos != null) {
-            restaurant.setPhoto_ref(photos[0].photoReference);
+            restaurant.setPhoto_ref(setRestaurantImagePath(context, restaurant, restaurantResult));
         }else{
-            restaurant.setPhoto_ref("");
+            restaurant.setPhoto_ref(null);
         }
         List<Category> categoriesList = getCategories(restaurantResult);
 
@@ -406,6 +416,55 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         restaurant.setCategories(categoriesList);
         return restaurant;
+    }
+
+    public Image getRestaurantImage(RestaurantModel restaurantModel){
+        String path = restaurantModel.getPhotoRef();
+        try {
+            File imageFile = new File(path);
+            if (imageFile.exists()) {
+                return ImageIO.read(imageFile);
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+//            System.err.println("Помилка при читанні зображення: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String setRestaurantImagePath(GeoApiContext context, Restaurant restaurant, PlacesSearchResult restaurantResult){
+        try {
+            Photo[] photos = restaurantResult.photos;
+            ImageResult photo = null;
+            photo = new PhotoRequest(context)
+                    .photoReference(photos[0].photoReference)
+                    .maxWidth(photos[0].width)
+                    .maxHeight(photos[0].height)
+                    .await();
+            byte[] imageData = photo.imageData;
+
+            String outputDirPath = "C:\\Users\\HP\\elasticsearch-demo\\src\\main\\resources\\db_data\\restaurant_images";
+            File outputDir = new File(outputDirPath);
+
+            if (!outputDir.exists()) {
+                outputDir.mkdirs();
+            }
+
+            String imagePath = "/db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
+            String path = "C:\\Users\\HP\\elasticsearch-demo\\src\\main\\resources" + imagePath;
+            // Write the byte array to the file
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                fos.write(imageData);
+                System.out.println("Image saved to: " + path);
+            } catch (IOException e) {
+                System.err.println("Error saving image: " + e.getMessage());
+            }
+
+            return imagePath;
+        } catch (ApiException | InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void setItemDetails(PlacesSearchResult restaurantResult, Restaurant restaurant, GeoApiContext context) {
@@ -417,7 +476,10 @@ public class RestaurantServiceImpl implements RestaurantService {
             } else {
                 restaurant.setPrice_level(0);
             }
-            restaurant.setWebsite(String.valueOf(details.website));
+            String website = String.valueOf(details.website);
+            if(website.length() < 256) {
+                restaurant.setWebsite(website);
+            }
         } catch (Exception e) {
             System.err.println("Неможливо отримати дані ресторану з placeId: " + restaurantResult.placeId);
         }
@@ -452,7 +514,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             ObjectMapper mapper = new ObjectMapper();
 
-            File file = new File("src/main/resources/json_data/restaurants.json");
+            File file = new File("src/main/resources/db_data/restaurants.json");
 
             mapper.writeValue(file, restaurants);
 
@@ -468,7 +530,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            List<Restaurant> restaurants = objectMapper.readValue(new File("src/main/resources/json_data/restaurants.json"),
+            List<Restaurant> restaurants = objectMapper.readValue(new File("src/main/resources/db_data/restaurants.json"),
                     new TypeReference<List<Restaurant>>() {});
 
             for (Restaurant restaurant : restaurants) {
@@ -488,4 +550,15 @@ public class RestaurantServiceImpl implements RestaurantService {
             System.err.println("Неможливо отримані дані з файлу.");
         }
     }
+
+//    public List<RestaurantModel> search(String keywords) {
+//        SearchResponse<RestaurantModel> searchResponse = .search(s -> s
+//                .index("person")
+//                .query(q -> q
+//                        .match(t -> t
+//                                .field("fullName")
+//                                .query(searchText))), Person.class);
+//
+//        List<Hit<Person>> hits = searchResponse.hits().hits();
+//    }
 }

@@ -1,19 +1,20 @@
 package ua.huryn.elasticsearch.view;
 
-import com.google.apps.card.v1.TextInput;
-import com.google.maps.model.TravelMode;
-import com.google.maps.routing.v2.RouteTravelMode;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.*;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
@@ -31,7 +32,6 @@ import java.util.List;
 @CssImport("styles.css")
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
 public class MenuView extends VerticalLayout {
-    private final ItemService itemService;
     private final RestaurantService restaurantService;
     CheckboxGroup<Integer> ratingCheckbox = new CheckboxGroup<>();
     CheckboxGroup<Integer> priceLevelCheckbox = new CheckboxGroup<>();
@@ -40,10 +40,9 @@ public class MenuView extends VerticalLayout {
     TextField firstPoint = new TextField();
     Div menuDiv;
 
-    public MenuView(RestaurantService restaurantService, ItemService itemService) {
+    @Autowired
+    public MenuView(RestaurantService restaurantService) {
         this.restaurantService = restaurantService;
-        this.itemService = itemService;
-//        menuDiv = createMenuDiv();
         add(createSearchSection());
         add(createDownSection());
 
@@ -68,6 +67,22 @@ public class MenuView extends VerticalLayout {
     private void updateMenu() {
         menuDiv.removeAll();
         menuDiv.add(createMenuDiv());
+    }
+
+    private Div createMenuDiv() {
+        menuDiv = new Div();
+        menuDiv.addClassNames("menu-div");
+
+        List<RestaurantModel> filteredRestaurantModelList = getFilteredRestaurantModelList();
+        Div restaurantsDiv = new Div();
+        restaurantsDiv.addClassNames("d-flex gap justify-content-center flex-wrap");
+
+        for (RestaurantModel restaurant : filteredRestaurantModelList) {
+            Div div = createRestaurantItem(restaurant);
+            restaurantsDiv.add(div);
+        }
+        menuDiv.add(restaurantsDiv);
+        return menuDiv;
     }
 
     private Div createSearchSection() {
@@ -98,53 +113,71 @@ public class MenuView extends VerticalLayout {
         return downSection;
     }
 
-    private Div createMenuDiv() {
-        menuDiv = new Div();
-        menuDiv.addClassNames("menu-div");
+    @NotNull
+    private Div createRestaurantItem(RestaurantModel restaurant) {
+        Div div = new Div();
+        div.addClassNames("item_div");
 
-        List<RestaurantModel> filteredRestaurantModelList = getFilteredRestaurantModelList();
-//        System.out.println("filtered-size - "+ filteredRestaurantModelList.size());
-        Div restaurantsDiv = new Div();
-        restaurantsDiv.addClassNames("d-flex justify-content-evenly flex-wrap");
+        Div imageContainer = new Div();
+        imageContainer.addClassNames("d-flex justify-content-center");
 
-        for(RestaurantModel restaurant: filteredRestaurantModelList){
-            Div div = new Div();
-            div.addClassNames("item_div");
-
-            Div imageContainer = new Div();
-            imageContainer.addClassNames("d-flex justify-content-center");
-
-            Image image = new Image();
-            image.setSrc("https://pianavyshnia.com/wp-content/uploads/2022/10/logo.png");
-            image.addClassNames("image");
-            imageContainer.add(image);
-
-            Div info = new Div();
-            info.addClassNames("d-flex flex-row justify-content-between");
-
-//            Div name = new Div();
-//            name.addClassNames("info width-60");
-//            Text resName = new Text(restaurant.getName());
-//            Text location = new Text(restaurant.getAddress());
-//            name.add(resName, location);
-//            Div rate = new Div();
-//            rate.addClassNames("info width-30");
+//        String scr = restaurant.getPhotoRef();
+//        if(scr == null){
+//            scr = "src/main/resources/db_data/restaurant_images/stock.jpg";
+//        }
+//        final String path = scr;
+//        StreamResource imageResource = new StreamResource(restaurant.getName().toLowerCase() + "_image.jpg",
+//                () -> getClass().getResourceAsStream(path));
 //
-//            Icon starIcon = VaadinIcon.STAR.create();
-//            starIcon.addClassNames("width-18");
+        Image image = new Image();
+            image.setSrc("https://pianavyshnia.com/wp-content/uploads/2022/10/logo.png");
+        image.addClassNames("image");
+        imageContainer.add(image);
 
-            String formattedRating = String.format("  %.1f\n", restaurant.getRating());
-            Text ratingValue = new Text(formattedRating);
+        Div info = new Div();
+        info.addClassNames("d-flex flex-row justify-content-around");
 
-            Text priceValue = new Text("" + restaurant.getPriceLevel());
+        Div name = new Div();
 
-//            rate.add(starIcon, ratingValue, priceValue);
-//            info.add(name, rate);
-            div.add(imageContainer, info);
-            restaurantsDiv.add(div);
+        name.addClassNames("info flex-column width-60");
+        int end = Math.min(25, restaurant.getName().length());
+        String route  = RouteConfiguration.forSessionScope()
+                .getUrl(RestaurantView.class, restaurant.getRestaurantId());
+        Anchor restName = new Anchor(route, restaurant.getName().substring(0, end));
+        restName.getStyle().setTextDecoration("none").setColor("000000FF");
+        Div resNameDiv = new Div();
+        resNameDiv.add(restName);
+
+        String cuisine = restaurant.getCuisineType();
+        Span cuisineType = null;
+        if(!cuisine.isBlank()) {
+            cuisine = cuisine.substring(0, 1).toUpperCase() + cuisine.substring(1);
+            cuisineType = new Span(cuisine + " cuisine");
+        }else{
+            cuisineType = new Span("");
         }
-        menuDiv.add(restaurantsDiv);
-        return menuDiv;
+        cuisineType.getStyle().setColor("#0074D9").setFontSize("smaller").setFontWeight(Style.FontWeight.BOLD);
+        Div cuisineDiv = new Div(cuisineType);
+        Map<Integer, String> checkboxValues = new HashMap<>();
+        checkboxValues.put(4, "₴₴₴₴₴");
+        checkboxValues.put(3, "₴₴₴ - ₴₴₴₴");
+        checkboxValues.put(2, "₴₴ - ₴₴₴");
+        checkboxValues.put(1, "₴ - ₴₴");
+        checkboxValues.put(0, "₴");
+        Div priceDiv = new Div(new Span(checkboxValues.get(restaurant.getPriceLevel())));
+        name.add(resNameDiv, cuisineDiv, priceDiv);
+
+
+        Div rate = new Div();
+        rate.addClassNames("info width-30");
+
+        String formattedRating = String.format("⭐ "+ Math.round(restaurant.getRating()));
+        Text ratingValue = new Text(formattedRating);
+
+        rate.add(ratingValue);
+        info.add(name, rate);
+        div.add(imageContainer, info);
+        return div;
     }
 
     private Div createFilters() {

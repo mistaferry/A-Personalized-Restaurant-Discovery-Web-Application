@@ -54,20 +54,21 @@
 }
 
 .item_div{
-    width: 25%;
-    /*height: 180px;*/
+    width: 300px;
+    height: 250px;
+    display: inline-block;
 }
 
 .image{
     padding: 20px;
     border-radius: 20px;
-    width: 180px;
-    height: 120px;
+    width: 230px;
+    height: 170px;
 }
 
 .info {
-    border: 1px solid #000;
-    background-color: #06b535;
+    /*border: 1px solid #000;*/
+    /*background-color: #06b535;*/
     padding: 10px;
     box-sizing: border-box;
     display: flex;
@@ -75,7 +76,7 @@
 }
 
 .width-60{
-    width: 60%;
+    width: 70%;
 }
 
 .width-30{
@@ -87,7 +88,7 @@
 }
 
 .gap{
-    /*gap: 10%;*/
+    gap: 20px;
 }
 
 .category-container{
@@ -95,5 +96,11 @@
     flex-wrap: wrap;
     justify-content: space-around;
     border-bottom: #1d1d2b;
-    border-top: #1d1d2b;
+    border-top: #000000;
+}
+
+.cuisine-type{
+    color: #0074D9;
+    font-weight: bold;
+    font-size: smaller;
 }

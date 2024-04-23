@@ -16,7 +16,7 @@ import java.util.List;
 public class RestaurantModel {
     @Id
     @Field(type = FieldType.Long, name = "restaurant_id")
-    private int restaurant_id;
+    private int restaurantId;
     @Field(type = FieldType.Text, name = "place_id")
     private String placeId;
     @Field(type = FieldType.Text, name = "name")
@@ -37,6 +37,9 @@ public class RestaurantModel {
     private String photoRef;
     @Field(type = FieldType.Text, name = "cuisine_type")
     private String cuisineType;
+    @Field(type = FieldType.Nested, name = "categories")
     private List<CategoryModel> categories;
+    @Field(type = FieldType.Nested, name = "dishes")
+    private List<CategoryModel> dishes;
 }
 

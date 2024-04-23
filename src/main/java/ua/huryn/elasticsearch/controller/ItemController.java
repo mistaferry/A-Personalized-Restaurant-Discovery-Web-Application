@@ -17,11 +17,6 @@ import lombok.RequiredArgsConstructor;
 public class ItemController {
     private final ItemService itemService;
 
-    @GetMapping("/all")
-    public Iterable<Item> getAll(){
-        return itemService.findAll();
-    }
-
     @GetMapping("/{name}")
     public List<Item> getItemByName(@PathVariable("name") String name) {
         return itemService.findByName(name);

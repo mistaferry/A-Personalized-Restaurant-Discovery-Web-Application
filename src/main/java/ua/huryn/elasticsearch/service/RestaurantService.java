@@ -1,15 +1,15 @@
 package ua.huryn.elasticsearch.service;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
 import com.google.maps.errors.ApiException;
-import com.google.maps.model.TravelMode;
-import com.google.maps.routing.v2.RouteTravelMode;
-import ua.huryn.elasticsearch.entity.Category;
 import ua.huryn.elasticsearch.model.RestaurantModel;
 
 public interface RestaurantService {
+    List<RestaurantModel> findAllByRestaurantId(int id);
+
     List<RestaurantModel> findByName(String name);
 
     List<RestaurantModel> findByRating(double rating);
@@ -28,6 +28,7 @@ public interface RestaurantService {
 
     List<RestaurantModel> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantModel> filtered);
 
+    Image getRestaurantImage(RestaurantModel restaurantModel);
 
 
 //    List<RestaurantModel> findByCategory(Category category);

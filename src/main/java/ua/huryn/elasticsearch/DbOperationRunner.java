@@ -24,11 +24,12 @@ public class DbOperationRunner implements CommandLineRunner {
         try {
 //            restaurantService.addDataToDb();
 //            restaurantService.addApiDataToFile();
+            System.out.println("Всі дані додано!");
         } catch (Exception e) {
-            System.err.println("Неможливо отримани дані за допомогою Api.\n" +
-                    "Будемо отримувати дані з файла");
-            e.printStackTrace();
-            restaurantService.addDataFromFileToDb();
+//            System.err.println("Неможливо отримани дані за допомогою Api.\n" +
+//                    "Будемо отримувати дані з файла");
+//            e.printStackTrace();
+//            restaurantService.addDataFromFileToDb();
         }
     }
 }
