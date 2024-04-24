@@ -16,7 +16,7 @@ import java.util.List;
 public class RestaurantModel {
     @Id
     @Field(type = FieldType.Long, name = "restaurant_id")
-    private int restaurantId;
+    private Long restaurantId;
     @Field(type = FieldType.Text, name = "place_id")
     private String placeId;
     @Field(type = FieldType.Text, name = "name")

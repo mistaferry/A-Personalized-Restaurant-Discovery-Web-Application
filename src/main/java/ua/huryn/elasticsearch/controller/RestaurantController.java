@@ -22,4 +22,9 @@ public class RestaurantController {
     public List<RestaurantModel> getItemByName(@PathVariable("name") String name) {
         return restaurantService.findByName(name);
     }
+
+    @GetMapping("/all")
+    public List<RestaurantModel> findAll(){
+        return restaurantService.getAll();
+    }
 }

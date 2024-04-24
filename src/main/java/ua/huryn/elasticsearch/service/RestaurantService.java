@@ -8,7 +8,7 @@ import com.google.maps.errors.ApiException;
 import ua.huryn.elasticsearch.model.RestaurantModel;
 
 public interface RestaurantService {
-    List<RestaurantModel> findAllByRestaurantId(int id);
+    public RestaurantModel findByRestaurantId(Long id);
 
     List<RestaurantModel> findByName(String name);
 
@@ -22,7 +22,7 @@ public interface RestaurantService {
 
     List<RestaurantModel> findByRatingAndPrice_level(double rating, int priceLevel);
 
-//    List<RestaurantModel> getAll();
+    List<RestaurantModel> getAll();
 
     List<RestaurantModel> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String firstPoint);
 

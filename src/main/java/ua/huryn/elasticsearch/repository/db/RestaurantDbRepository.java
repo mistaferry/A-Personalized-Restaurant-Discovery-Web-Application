@@ -11,10 +11,7 @@ import java.util.List;
 
 @Repository
 public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer> {
-    @Query("SELECT r FROM Restaurant r WHERE r.place_id = :placeId")
-    Restaurant findByPlace_id(@Param("placeId") String placeId);
-
-    @EntityGraph(attributePaths = "categories")
+    @EntityGraph(attributePaths = {"categories"})
     @Query("SELECT r FROM Restaurant r")
     List<Restaurant> getAll();
 }

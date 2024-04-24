@@ -16,7 +16,7 @@ public class Restaurant {
     @Column(name = "restaurant_id")
     private Long id;
     @Column(name = "place_id")
-    private String place_id;
+    private String placeId;
     @Column(name = "name")
     private String name;
     @Column(name = "address")
@@ -28,13 +28,13 @@ public class Restaurant {
     @Column(name = "rating")
     private Double rating;
     @Column(name = "price_level")
-    private int price_level;
+    private int priceLevel;
     @Column(name = "website")
     private String website;
     @Column(name = "photo_ref")
-    private String photo_ref;
+    private String photoRef;
     @Column(name = "cuisine_type")
-    private String cuisine_type;
+    private String cuisineType;
     @OneToMany
     @JoinTable(
             name = "restaurant_category",

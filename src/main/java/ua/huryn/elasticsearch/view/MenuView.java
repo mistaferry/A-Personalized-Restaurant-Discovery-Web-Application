@@ -10,7 +10,6 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.*;
@@ -169,7 +168,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         checkboxValues.put(1, "₴ - ₴₴");
         checkboxValues.put(0, "₴");
         Div priceDiv = new Div(new Span(checkboxValues.get(restaurant.getPriceLevel())));
-        name.add(resNameDiv, cuisineDiv, priceDiv);
+        name.add( cuisineDiv, priceDiv);
 
 
         Div rate = new Div();

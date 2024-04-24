@@ -1,32 +1,20 @@
 package ua.huryn.elasticsearch.service.impl;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.util.Lists;
 import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
 import com.google.maps.model.*;
 import lombok.RequiredArgsConstructor;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.stereotype.Service;import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.entity.Category;
 import ua.huryn.elasticsearch.entity.Restaurant;
+import ua.huryn.elasticsearch.model.CategoryModel;
 import ua.huryn.elasticsearch.model.RestaurantModel;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
@@ -43,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -100,8 +87,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantModel> findAllByRestaurantId(int id) {
-        return restaurantRepository.findAllByRestaurantId(id);
+    public RestaurantModel findByRestaurantId(Long id) {
+        return restaurantRepository.findByRestaurantId(id);
     }
 
     @Override
@@ -135,6 +122,11 @@ public class RestaurantServiceImpl implements RestaurantService {
             list.addAll(restaurantRepository.findByRatingAndPriceLevel(i, priceLevel));
         }
         return list;
+    }
+
+    @Override
+    public List<RestaurantModel> getAll() {
+        return Lists.newArrayList(restaurantRepository.findAll());
     }
 
     @Override
@@ -349,7 +341,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private void getRestaurantsDataFromResponse(PlacesSearchResult[] res, GeoApiContext context, String cuisine) {
         for (int i = 0; i < res.length; i++) {
             PlacesSearchResult r = res[i];
-            Object existsObject = restaurantDbRepository.findByPlace_id(r.placeId);
+            Object existsObject = restaurantRepository.findByPlaceId(r.placeId);
             if(existsObject == null) {
                 Restaurant restaurant = getItem(r, context, cuisine);
                 restaurantDbRepository.save(restaurant);
@@ -397,18 +389,18 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     private Restaurant getItem(PlacesSearchResult restaurantResult, GeoApiContext context, String cuisine){
         Restaurant restaurant = new Restaurant();
-        restaurant.setPlace_id(restaurantResult.placeId);
+        restaurant.setPlaceId(restaurantResult.placeId);
         restaurant.setName(restaurantResult.name);
         restaurant.setAddress(restaurantResult.vicinity);
         restaurant.setLatitude(restaurantResult.geometry.location.lat);
         restaurant.setLongitude(restaurantResult.geometry.location.lng);
         restaurant.setRating((double) restaurantResult.rating);
-        restaurant.setCuisine_type(cuisine);
+        restaurant.setCuisineType(cuisine);
         Photo[] photos = restaurantResult.photos;
         if(photos != null) {
-            restaurant.setPhoto_ref(setRestaurantImagePath(context, restaurant, restaurantResult));
+            restaurant.setPhotoRef(setRestaurantImagePath(context, restaurant, restaurantResult));
         }else{
-            restaurant.setPhoto_ref(null);
+            restaurant.setPhotoRef(null);
         }
         List<Category> categoriesList = getCategories(restaurantResult);
 
@@ -472,9 +464,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             PlaceDetails details = PlacesApi.placeDetails(context, restaurantResult.placeId).await();
             PriceLevel priceLev = details.priceLevel;
             if (priceLev != null) {
-                restaurant.setPrice_level(priceLev.ordinal());
+                restaurant.setPriceLevel(priceLev.ordinal());
             } else {
-                restaurant.setPrice_level(0);
+                restaurant.setPriceLevel(0);
             }
             String website = String.valueOf(details.website);
             if(website.length() < 256) {
@@ -561,4 +553,25 @@ public class RestaurantServiceImpl implements RestaurantService {
 //
 //        List<Hit<Person>> hits = searchResponse.hits().hits();
 //    }
+
+    private RestaurantModel restaurantEntityIntoModel(Restaurant restaurant){
+        RestaurantModel restaurantModel = restaurantRepository.findByRestaurantId(restaurant.getId());
+        restaurantModel.setCategories(getCategoryModelList(restaurant.getCategories()));
+        return restaurantModel;
+    }
+
+    private List<CategoryModel> getCategoryModelList(List<Category> categories){
+        List<CategoryModel> categoryModels = new ArrayList<>();
+        for (Category category: categories){
+            categoryModels.add(categoryEntityIntoModel(category));
+        }
+        return categoryModels;
+    }
+
+    private CategoryModel categoryEntityIntoModel(Category category){
+        return new CategoryModel()
+                .setCategory_id(category.getId())
+                .setName(category.getName());
+    }
+
 }
