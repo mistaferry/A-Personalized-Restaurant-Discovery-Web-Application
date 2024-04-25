@@ -20,7 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
-import ua.huryn.elasticsearch.model.RestaurantModel;
+import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
@@ -76,11 +77,11 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         menuDiv = new Div();
         menuDiv.addClassNames("menu-div");
 
-        List<RestaurantModel> filteredRestaurantModelList = getFilteredRestaurantModelList();
+        List<RestaurantDTO> filteredRestaurantModelList = getFilteredRestaurantModelList();
         Div restaurantsDiv = new Div();
         restaurantsDiv.addClassNames("d-flex gap justify-content-center flex-wrap");
 
-        for (RestaurantModel restaurant : filteredRestaurantModelList) {
+        for (RestaurantDTO restaurant : filteredRestaurantModelList) {
             Div div = createRestaurantItem(restaurant);
             restaurantsDiv.add(div);
         }
@@ -117,7 +118,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     @NotNull
-    private Div createRestaurantItem(RestaurantModel restaurant) {
+    private Div createRestaurantItem(RestaurantDTO restaurant) {
         Div div = new Div();
         div.addClassNames("item_div");
 
@@ -413,7 +414,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
                 .collect(Collectors.toSet());
     }
 
-    private List<RestaurantModel> getFilteredRestaurantModelList() {
+    private List<RestaurantDTO> getFilteredRestaurantModelList() {
         List<String> selectedCuisine = cuisineCheckboxListener();
         List<Integer> selectedPrices = priceCheckboxListener();
         List<Integer> selectedRating = ratingCheckboxListener();

@@ -1,4 +1,4 @@
-package ua.huryn.elasticsearch.model;
+package ua.huryn.elasticsearch.entity.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;

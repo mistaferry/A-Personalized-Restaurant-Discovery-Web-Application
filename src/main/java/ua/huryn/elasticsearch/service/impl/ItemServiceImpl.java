@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import ua.huryn.elasticsearch.model.Item;
+import ua.huryn.elasticsearch.entity.model.Item;
 import ua.huryn.elasticsearch.repository.elasticsearch.ItemRepository;
 import ua.huryn.elasticsearch.service.ItemService;
 import lombok.RequiredArgsConstructor;

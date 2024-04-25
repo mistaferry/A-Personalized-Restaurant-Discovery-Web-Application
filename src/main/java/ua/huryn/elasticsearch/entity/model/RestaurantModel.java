@@ -1,13 +1,11 @@
-package ua.huryn.elasticsearch.model;
+package ua.huryn.elasticsearch.entity.model;
 
-import jakarta.persistence.Column;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import lombok.Data;
-import ua.huryn.elasticsearch.entity.Category;
 
 import java.util.List;
 

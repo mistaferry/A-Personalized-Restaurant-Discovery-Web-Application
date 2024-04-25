@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ua.huryn.elasticsearch.model.Item;
+import ua.huryn.elasticsearch.entity.model.Item;
 import ua.huryn.elasticsearch.service.ItemService;
 import lombok.RequiredArgsConstructor;
 

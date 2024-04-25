@@ -2,7 +2,6 @@ package ua.huryn.elasticsearch.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.util.Lists;
 import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
@@ -12,14 +11,16 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
-import ua.huryn.elasticsearch.entity.Category;
-import ua.huryn.elasticsearch.entity.Restaurant;
-import ua.huryn.elasticsearch.model.CategoryModel;
-import ua.huryn.elasticsearch.model.RestaurantModel;
+import ua.huryn.elasticsearch.entity.db.Category;
+import ua.huryn.elasticsearch.entity.db.Restaurant;
+import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.entity.model.CategoryModel;
+import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
 import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
+import ua.huryn.elasticsearch.utils.Convertor;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -40,17 +41,18 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final CategoryDbRepository categoryDbRepository;
 
     @Override
-    public List<RestaurantModel> findByRating(double rating) {
-        List<RestaurantModel> list = new ArrayList<>();
+    public List<RestaurantDTO> findByRating(double rating) {
+        List<RestaurantDTO> ratingList = new ArrayList<>();
 
         double[] ratingRange = calculateRatingRange(rating);
         double startRating = ratingRange[0];
         double endRating = ratingRange[1];
 
         for (double i = startRating; i <= endRating; i += 0.1) {
-            list.addAll(restaurantRepository.findByRating(i));
+            List<Restaurant> restaurantList = restaurantDbRepository.findByRating(i);
+            ratingList.addAll(Convertor.convertEntityListToDTO(restaurantList));
         }
-        return list;
+        return ratingList;
     }
 
     private double[] calculateRatingRange(double rating) {
@@ -87,60 +89,61 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public RestaurantModel findByRestaurantId(Long id) {
-        return restaurantRepository.findByRestaurantId(id);
+    public RestaurantDTO findByRestaurantId(Long id) {
+        return Convertor.convertToDTO(restaurantDbRepository.findById(id));
     }
 
     @Override
-    public List<RestaurantModel> findByName(String name) {
-        return restaurantRepository.findByName(name);
+    public List<RestaurantDTO> findByName(String name) {
+        return Convertor.convertEntityListToDTO(restaurantDbRepository.findByName(name));
     }
 
     @Override
-    public List<RestaurantModel> findByLatitudeAndLongitude(double latitude, double longitude) {
-        return restaurantRepository.findByLatitudeAndLongitude(latitude, longitude);
+    public List<RestaurantDTO> findByLatitudeAndLongitude(double latitude, double longitude) {
+        return Convertor.convertEntityListToDTO(restaurantDbRepository.findByLatitudeAndLongitude(latitude, longitude));
     }
 
     @Override
-    public List<RestaurantModel> findByPrice_level(int priceLevel) {
-        return new ArrayList<>(restaurantRepository.findByPriceLevel(priceLevel));
+    public List<RestaurantDTO> findByPrice_level(int priceLevel) {
+        return Convertor.convertEntityListToDTO(restaurantDbRepository.findByPriceLevel(priceLevel));
     }
 
     @Override
-    public List<RestaurantModel> findByCuisineType(String cuisineType) {
-        return restaurantRepository.findByCuisineType(cuisineType);
+    public List<RestaurantDTO> findByCuisineType(String cuisineType) {
+        return Convertor.convertEntityListToDTO(restaurantDbRepository.findByCuisineType(cuisineType));
     }
 
     @Override
-    public List<RestaurantModel> findByRatingAndPrice_level(double rating, int priceLevel) {
-        List<RestaurantModel> list = new ArrayList<>();
+    public List<RestaurantDTO> findByRatingAndPrice_level(double rating, int priceLevel) {
+        List<RestaurantDTO> restaurantModelList = new ArrayList<>();
         double[] ratingRange = calculateRatingRange(rating);
         double startRating = ratingRange[0];
         double endRating = ratingRange[1];
 
         for (double i = startRating; i <= endRating; i += 0.1) {
-            list.addAll(restaurantRepository.findByRatingAndPriceLevel(i, priceLevel));
+            List<RestaurantDTO> list = Convertor.convertEntityListToDTO(restaurantDbRepository.findByRatingAndPriceLevel(i, priceLevel));
+            restaurantModelList.addAll(list);
         }
-        return list;
+        return restaurantModelList;
     }
 
     @Override
-    public List<RestaurantModel> getAll() {
-        return Lists.newArrayList(restaurantRepository.findAll());
+    public List<RestaurantDTO> getAll() {
+        return Convertor.convertEntityListToDTO(restaurantDbRepository.getAll());
     }
 
     @Override
-    public List<RestaurantModel> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String firstPoint) {
-        List<RestaurantModel> filteredData = restaurantRepository.findAll();
+    public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String firstPoint) {
+        List<RestaurantDTO> filteredData = Convertor.convertEntityListToDTO(restaurantDbRepository.getAll());
 
         filteredData = filteredByRating(rating, filteredData);
         filteredData = filteredByPriceLevel(price, filteredData);
         filteredData = filteredByCuisineType(cuisineTypes, filteredData);
         filteredData = getRestaurantInGivenDistance(firstPoint, routes, filteredData);
 
-        if(cuisineTypes.isEmpty() && rating.isEmpty() && price.isEmpty() && filteredData.isEmpty()){
-            filteredData = restaurantRepository.findAll();
-        }
+//        if(cuisineTypes.isEmpty() && rating.isEmpty() && price.isEmpty() && filteredData.isEmpty()){
+//            filteredData = restaurantDbRepository.findAll();
+//        }
         System.out.println("cuisineTypes - " +cuisineTypes);
         System.out.println("rating - " +rating);
         System.out.println("price - " +price);
@@ -150,7 +153,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantModel> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantModel> filtered) {
+    public List<RestaurantDTO> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantDTO> filtered) {
         if(routes != null && !routes.isEmpty()) {
             Pattern SPLIT_PATTERN = Pattern.compile("^(.*?),\\s*(.*)$");
             Matcher splitMatcher = SPLIT_PATTERN.matcher(firstPoint);
@@ -190,11 +193,11 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .build();
     }
 
-    private List<RestaurantModel> getRestaurantsByAddress(GeoApiContext context, String address, String numValue, List<RestaurantModel> filtered, List<TravelMode> modes){
-        List<RestaurantModel> restaurantModelList = new ArrayList<>();
+    private List<RestaurantDTO> getRestaurantsByAddress(GeoApiContext context, String address, String numValue, List<RestaurantDTO> filtered, List<TravelMode> modes){
+        List<RestaurantDTO> restaurantModelList = new ArrayList<>();
         try {
             for (TravelMode mode: modes){
-                for (RestaurantModel restaurant : filtered) {
+                for (RestaurantDTO restaurant : filtered) {
                     if(mode.equals(TravelMode.UNKNOWN)){
                         mode = TravelMode.WALKING;
                         DistanceMatrix distanceMatrix = new DistanceMatrixApiRequest(context)
@@ -239,11 +242,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         return !isGeographicCoordinates(text);
     }
 
-    private List<RestaurantModel> filteredByCuisineType(List<String> cuisineTypes, List<RestaurantModel> filteredData){
+    private List<RestaurantDTO> filteredByCuisineType(List<String> cuisineTypes, List<RestaurantDTO> filteredData){
         if(cuisineTypes != null && !cuisineTypes.isEmpty()){
-            List<RestaurantModel> filtered = new ArrayList<>();
+            List<RestaurantDTO> filtered = new ArrayList<>();
             for (String cuisine: cuisineTypes){
-                for(RestaurantModel restaurantModel: filteredData) {
+                for(RestaurantDTO restaurantModel: filteredData) {
                     if(restaurantModel.getCuisineType().equals(cuisine)){
                         filtered.add(restaurantModel);
                     }
@@ -255,11 +258,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private List<RestaurantModel> filteredByPriceLevel(List<Integer> price, List<RestaurantModel> filteredData) {
+    private List<RestaurantDTO> filteredByPriceLevel(List<Integer> price, List<RestaurantDTO> filteredData) {
         if(price != null && !price.isEmpty()){
-            List<RestaurantModel> filtered = new ArrayList<>();
+            List<RestaurantDTO> filtered = new ArrayList<>();
             for (Integer priceLevel: price){
-                for(RestaurantModel restaurantModel: filteredData){
+                for(RestaurantDTO restaurantModel: filteredData){
                     if(restaurantModel.getPriceLevel() == priceLevel){
                         filtered.add(restaurantModel);
                     }
@@ -271,9 +274,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private List<RestaurantModel> filteredByRating(List<Integer> rating, List<RestaurantModel> filteredData) {
+    private List<RestaurantDTO> filteredByRating(List<Integer> rating, List<RestaurantDTO> filteredData) {
         if(rating != null && !rating.isEmpty()){
-            List<RestaurantModel> filtered = new ArrayList<>();
+            List<RestaurantDTO> filtered = new ArrayList<>();
             for (Integer rate: rating){
                 filtered.addAll(findByRating(rate));
             }
@@ -299,7 +302,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         .await();
 
                 PlacesSearchResult[] placesSearchResults = response.results;
-                getRestaurantsDataFromResponse(placesSearchResults, context, cuisine);
+                saveDataFromResponseToDb(placesSearchResults, context, cuisine);
                 getRestaurantsDataFromResponseWithNextPageToken(loc, response, context, cuisine);
             }
         }
@@ -315,7 +318,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .await();
 
             PlacesSearchResult[] placesSearchResults = response.results;
-            getRestaurantsDataFromResponse(placesSearchResults, context, "");
+            saveDataFromResponseToDb(placesSearchResults, context, "");
             getRestaurantsDataFromResponseWithNextPageToken(loc, response, context, "");
         }
     }
@@ -330,7 +333,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         .language("en")
                         .pageToken(nextPageToken)
                         .await();
-                getRestaurantsDataFromResponse(response.results, context, cuisine);
+                saveDataFromResponseToDb(response.results, context, cuisine);
                 nextPageToken = response.nextPageToken;
             } catch (InvalidRequestException e) {
                 break;
@@ -338,7 +341,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private void getRestaurantsDataFromResponse(PlacesSearchResult[] res, GeoApiContext context, String cuisine) {
+    private void saveDataFromResponseToDb(PlacesSearchResult[] res, GeoApiContext context, String cuisine) {
         for (int i = 0; i < res.length; i++) {
             PlacesSearchResult r = res[i];
             Object existsObject = restaurantRepository.findByPlaceId(r.placeId);
@@ -410,7 +413,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurant;
     }
 
-    public Image getRestaurantImage(RestaurantModel restaurantModel){
+    public Image getRestaurantImage(RestaurantDTO restaurantModel){
         String path = restaurantModel.getPhotoRef();
         try {
             File imageFile = new File(path);
@@ -502,7 +505,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void addApiDataToFile(){
         try {
-            List<RestaurantModel> restaurants = restaurantRepository.findAll();
+            List<Restaurant> restaurants = restaurantDbRepository.findAll();
 
             ObjectMapper mapper = new ObjectMapper();
 

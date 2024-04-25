@@ -1,4 +1,4 @@
-package ua.huryn.elasticsearch.entity;
+package ua.huryn.elasticsearch.entity.db;
 
 import jakarta.persistence.*;
 import lombok.Getter;
