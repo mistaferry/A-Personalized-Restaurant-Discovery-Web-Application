@@ -14,9 +14,23 @@ spring:
   # Time to wait for active requests to finish during the shutdown
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
 # Swagger
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
+bootstrap:
+  addData: ${ADD_DATA}
+  google:
+    apiKey: ${API_KEY}
+
