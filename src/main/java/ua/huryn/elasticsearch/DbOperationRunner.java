@@ -22,7 +22,9 @@ public class DbOperationRunner implements CommandLineRunner {
         if (bootstrapProperties.isAddDate()) {
             try {
                 log.info("Start adding data from Google");
+                log.debug("Add data to database");
                 restaurantService.addDataToDb();
+                log.debug("Add data to file");
                 restaurantService.addApiDataToFile();
                 log.info("Data from Google was added");
             } catch (Exception e) {

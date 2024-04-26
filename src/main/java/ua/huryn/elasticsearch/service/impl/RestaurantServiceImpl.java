@@ -290,6 +290,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<String> cuisineList = getCuisineTypeFromJson();
         GeoApiContext context = getGeoApiContext();
 
+        log.info("Received information about {} cuisines and {} locations", cuisineList.size(), locationsList.size());
+
         for (String cuisine: cuisineList){
             for (LatLng loc: locationsList){
                 PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
@@ -300,7 +302,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         .await();
 
                 PlacesSearchResult[] placesSearchResults = response.results;
-                getRestaurantsDataFromResponse(placesSearchResults, context, cuisine);
+                saveDataFromResponseToDb(placesSearchResults, context, cuisine);
                 getRestaurantsDataFromResponseWithNextPageToken(loc, response, context, cuisine);
             }
         }
@@ -316,7 +318,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .await();
 
             PlacesSearchResult[] placesSearchResults = response.results;
-            getRestaurantsDataFromResponse(placesSearchResults, context, "");
+            saveDataFromResponseToDb(placesSearchResults, context, "");
             getRestaurantsDataFromResponseWithNextPageToken(loc, response, context, "");
         }
     }
@@ -331,7 +333,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         .language("en")
                         .pageToken(nextPageToken)
                         .await();
-                getRestaurantsDataFromResponse(response.results, context, cuisine);
+                saveDataFromResponseToDb(response.results, context, cuisine);
                 nextPageToken = response.nextPageToken;
             } catch (InvalidRequestException e) {
                 break;
@@ -339,13 +341,24 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private void getRestaurantsDataFromResponse(PlacesSearchResult[] res, GeoApiContext context, String cuisine) {
-        for (int i = 0; i < res.length; i++) {
-            PlacesSearchResult r = res[i];
-            Object existsObject = restaurantRepository.findByPlaceId(r.placeId);
-            if(existsObject == null) {
-                Restaurant restaurant = getItem(r, context, cuisine);
+    private void saveDataFromResponseToDb(PlacesSearchResult[] arrayOfResults, GeoApiContext context, String cuisine) {
+        log.info("Received info of {} restaurants", arrayOfResults.length);
+        int countOfProcessedRestaurants = 0;
+        int countOfSavedRestaurants = 0;
+        for (PlacesSearchResult result : arrayOfResults) {
+            log.debug("one result from search - {}", result);
+//            Object existsObject = restaurantRepository.findByPlaceId(result.placeId);
+            Object existsObject = restaurantDbRepository.findByPlaceId(result.placeId);
+            if (existsObject == null) {
+                log.debug("The restaurant wasn't find. Let's add it");
+                Restaurant restaurant = getItem(result, context, cuisine);
+                log.debug("Add restaurant: {}", restaurant);
                 restaurantDbRepository.save(restaurant);
+                countOfSavedRestaurants++;
+            }
+            countOfProcessedRestaurants ++;
+            if(countOfProcessedRestaurants%100 == 0) {
+                log.info("Processed {} restaurants, {} were saved", countOfProcessedRestaurants, countOfSavedRestaurants);
             }
         }
     }
@@ -437,15 +450,16 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .await();
             byte[] imageData = photo.imageData;
 
-            String outputDirPath = "C:\\Users\\HP\\elasticsearch-demo\\src\\main\\resources\\db_data\\restaurant_images";
+            String parentDirectory = "src/main/resources/";
+            String outputDirPath = parentDirectory + "db_data/restaurant_images";
             File outputDir = new File(outputDirPath);
 
             if (!outputDir.exists()) {
                 outputDir.mkdirs();
             }
 
-            String imagePath = "/db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
-            String path = "C:\\Users\\HP\\elasticsearch-demo\\src\\main\\resources" + imagePath;
+            String imagePath = "db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
+            String path = parentDirectory + imagePath;
             // Write the byte array to the file
             try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(imageData);

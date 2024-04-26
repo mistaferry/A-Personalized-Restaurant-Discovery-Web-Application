@@ -18,8 +18,10 @@ public class BootstrapProperties {
     private String apiKey;
 
     @PostConstruct
-    private void postConstract() {
+    private void postConstruct() {
         log.info("load data on startup - {}", addDate);
-//        log.info("apiKey = {}", apiKey);
+        if (addDate && apiKey.isEmpty()) {
+            log.warn("You are going to import data, but apiKey is empty. You can't import data from Google this way.");
+        }
     }
 }
