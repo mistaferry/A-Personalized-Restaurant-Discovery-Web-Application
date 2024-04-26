@@ -3,7 +3,6 @@ package ua.huryn.elasticsearch.repository.db;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ua.huryn.elasticsearch.entity.Restaurant;
 
@@ -14,4 +13,6 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
     @EntityGraph(attributePaths = {"categories"})
     @Query("SELECT r FROM Restaurant r")
     List<Restaurant> getAll();
+
+    Object findByPlaceId(String placeId);
 }
