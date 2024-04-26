@@ -35,3 +35,7 @@ build/
 docker/mysql/data
 docker/odfe-node/data
 docker/logstash/data/
+
+src/main/resources/db_data
+frontend/
+src/main/bundles
