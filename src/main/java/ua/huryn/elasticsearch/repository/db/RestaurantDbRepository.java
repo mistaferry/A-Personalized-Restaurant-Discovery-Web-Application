@@ -30,4 +30,6 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
     @EntityGraph(attributePaths = {"categories"})
     @Query("SELECT r FROM Restaurant r")
     List<Restaurant> getAll();
+
+//    Object findByPlaceId(String placeId);
 }

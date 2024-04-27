@@ -1,36 +1,37 @@
 package ua.huryn.elasticsearch;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import ua.huryn.elasticsearch.config.BootstrapProperties;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
 @Component
+@Slf4j
+@AllArgsConstructor
 public class DbOperationRunner implements CommandLineRunner {
-    @Autowired
-    RestaurantDbRepository restaurantDbRepository;
-    @Autowired
-    CategoryDbRepository categoryDbRepository;
     private final RestaurantService restaurantService;
-
-    public DbOperationRunner(RestaurantService restaurantService) {
-        this.restaurantService = restaurantService;
-    }
+    private final BootstrapProperties bootstrapProperties;
 
     @Override
-    public void run(String... args){
-        try {
-            restaurantService.addDataToDb();
-//            restaurantService.addApiDataToFile();
-            System.out.println("Всі дані додано!");
-        } catch (Exception e) {
-//            System.err.println("Неможливо отримани дані за допомогою Api.\n" +
-//                    "Будемо отримувати дані з файла");
-//            e.printStackTrace();
-//            restaurantService.addDataFromFileToDb();
+    public void run(String... args) {
+        if (bootstrapProperties.isAddDate()) {
+            try {
+                log.info("Start adding data from Google");
+                log.debug("Add data to database");
+                restaurantService.addDataToDb();
+                log.debug("Add data to file");
+                restaurantService.addApiDataToFile();
+                log.info("Data from Google was added");
+            } catch (Exception e) {
+                log.error("Can't add data from Google. Let's try to add it from file");
+                restaurantService.addDataFromFileToDb();
+                log.info("Data from file was added");
+            }
         }
     }
 }
-

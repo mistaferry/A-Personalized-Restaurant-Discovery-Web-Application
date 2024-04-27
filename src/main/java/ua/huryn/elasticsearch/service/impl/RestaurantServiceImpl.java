@@ -7,6 +7,7 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
 import com.google.maps.model.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,6 +17,7 @@ import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.model.CategoryModel;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
+import ua.huryn.elasticsearch.config.BootstrapProperties;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
 import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
@@ -29,16 +31,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantDbRepository restaurantDbRepository;
     private final CategoryDbRepository categoryDbRepository;
+    private final BootstrapProperties bootstrapProperties;
 
     @Override
     public List<RestaurantDTO> findByRating(double rating) {
@@ -185,11 +188,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         return filtered;
     }
 
-    private static GeoApiContext getGeoApiContext() throws IOException {
-        Properties appProps = new Properties();
-        appProps.load(new FileInputStream("src/main/resources/api.properties"));
+    private /*static*/ GeoApiContext getGeoApiContext() throws IOException {
         return new GeoApiContext.Builder()
-                .apiKey(appProps.getProperty("api_key"))
+                .apiKey(bootstrapProperties.getApiKey())
                 .build();
     }
 
@@ -292,6 +293,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<String> cuisineList = getCuisineTypeFromJson();
         GeoApiContext context = getGeoApiContext();
 
+        log.info("Received information about {} cuisines and {} locations", cuisineList.size(), locationsList.size());
+
         for (String cuisine: cuisineList){
             for (LatLng loc: locationsList){
                 PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
@@ -341,13 +344,24 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private void saveDataFromResponseToDb(PlacesSearchResult[] res, GeoApiContext context, String cuisine) {
-        for (int i = 0; i < res.length; i++) {
-            PlacesSearchResult r = res[i];
-            Object existsObject = restaurantDbRepository.findByPlaceId(r.placeId);
-            if(existsObject == null) {
-                Restaurant restaurant = getItem(r, context, cuisine);
+    private void saveDataFromResponseToDb(PlacesSearchResult[] arrayOfResults, GeoApiContext context, String cuisine) {
+        log.info("Received info of {} restaurants", arrayOfResults.length);
+        int countOfProcessedRestaurants = 0;
+        int countOfSavedRestaurants = 0;
+        for (PlacesSearchResult result : arrayOfResults) {
+            log.debug("one result from search - {}", result);
+//            Object existsObject = restaurantRepository.findByPlaceId(result.placeId);
+            Object existsObject = restaurantDbRepository.findByPlaceId(result.placeId);
+            if (existsObject == null) {
+                log.debug("The restaurant wasn't find. Let's add it");
+                Restaurant restaurant = getItem(result, context, cuisine);
+                log.debug("Add restaurant: {}", restaurant);
                 restaurantDbRepository.save(restaurant);
+                countOfSavedRestaurants++;
+            }
+            countOfProcessedRestaurants ++;
+            if(countOfProcessedRestaurants%100 == 0) {
+                log.info("Processed {} restaurants, {} were saved", countOfProcessedRestaurants, countOfSavedRestaurants);
             }
         }
     }
@@ -439,15 +453,16 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .await();
             byte[] imageData = photo.imageData;
 
-            String outputDirPath = "C:\\Users\\HP\\elasticsearch-demo\\src\\main\\resources\\db_data\\restaurant_images";
+            String parentDirectory = "src/main/resources/";
+            String outputDirPath = parentDirectory + "db_data/restaurant_images";
             File outputDir = new File(outputDirPath);
 
             if (!outputDir.exists()) {
                 outputDir.mkdirs();
             }
 
-            String imagePath = "/db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
-            String path = "C:\\Users\\HP\\elasticsearch-demo\\src\\main\\resources" + imagePath;
+            String imagePath = "db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
+            String path = parentDirectory + imagePath;
             // Write the byte array to the file
             try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(imageData);
@@ -529,8 +544,10 @@ public class RestaurantServiceImpl implements RestaurantService {
                     new TypeReference<List<Restaurant>>() {});
 
             for (Restaurant restaurant : restaurants) {
+                log.info("restaurant: {}", restaurant);
                 List<Category> categories = restaurant.getCategories();
                 for (Category category: categories){
+                    log.info("category: {}", category);
                     Category existsCategory = categoryDbRepository.findByName(category.getName());
                     if(existsCategory == null){
                         categoryDbRepository.save(category);
@@ -539,10 +556,12 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
 
             restaurantDbRepository.saveAll(restaurants);
-            System.out.println("Успішно отримано дані з файлу");
+//            System.out.println("Успішно отримано дані з файлу");
+            log.info("Data was added from file");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Неможливо отримані дані з файлу.");
+//            e.printStackTrace();
+//            System.err.println("Неможливо отримані дані з файлу.");
+            log.error("There was a problem getting data from file: {}", e.getMessage());
         }
     }
 
