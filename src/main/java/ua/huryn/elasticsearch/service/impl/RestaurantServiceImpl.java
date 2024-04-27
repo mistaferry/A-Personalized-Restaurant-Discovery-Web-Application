@@ -147,11 +147,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 //        if(cuisineTypes.isEmpty() && rating.isEmpty() && price.isEmpty() && filteredData.isEmpty()){
 //            filteredData = restaurantDbRepository.findAll();
 //        }
-        System.out.println("cuisineTypes - " +cuisineTypes);
-        System.out.println("rating - " +rating);
-        System.out.println("price - " +price);
-        System.out.println("routes - " +routes);
-        System.out.println("filtered size - " + filteredData.size());
+        log.debug("cuisineTypes - {}", cuisineTypes);
+        log.debug("rating - {}", rating);
+        log.debug("price - {}", price);
+        log.debug("routes - {}", routes);
+        log.debug("filtered size - {}", filteredData.size());
         return filteredData;
     }
 
