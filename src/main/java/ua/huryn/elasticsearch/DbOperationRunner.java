@@ -22,7 +22,7 @@ public class DbOperationRunner implements CommandLineRunner {
     @Override
     public void run(String... args){
         try {
-//            restaurantService.addDataToDb();
+            restaurantService.addDataToDb();
 //            restaurantService.addApiDataToFile();
             System.out.println("Всі дані додано!");
         } catch (Exception e) {

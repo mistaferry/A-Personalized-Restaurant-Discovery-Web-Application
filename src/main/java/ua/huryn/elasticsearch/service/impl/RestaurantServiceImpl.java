@@ -344,7 +344,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private void saveDataFromResponseToDb(PlacesSearchResult[] res, GeoApiContext context, String cuisine) {
         for (int i = 0; i < res.length; i++) {
             PlacesSearchResult r = res[i];
-            Object existsObject = restaurantRepository.findByPlaceId(r.placeId);
+            Object existsObject = restaurantDbRepository.findByPlaceId(r.placeId);
             if(existsObject == null) {
                 Restaurant restaurant = getItem(r, context, cuisine);
                 restaurantDbRepository.save(restaurant);
@@ -546,15 +546,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-//    public List<RestaurantModel> search(String keywords) {
-//        SearchResponse<RestaurantModel> searchResponse = .search(s -> s
-//                .index("person")
-//                .query(q -> q
-//                        .match(t -> t
-//                                .field("fullName")
-//                                .query(searchText))), Person.class);
-//
-//        List<Hit<Person>> hits = searchResponse.hits().hits();
+//    @Override
+//    public List<RestaurantDTO> searchElasticByNameAndAddress(String keywords) {
+//        List<RestaurantModel> restaurantsByKeyword = restaurantRepository.findBySearchField(keywords);
+//        List<Restaurant> restaurantsFromDb = new ArrayList<>();
+//        for (RestaurantModel restaurantModel: restaurantsByKeyword){
+//            Restaurant restaurant = restaurantDbRepository.findById(restaurantModel.getRestaurantId());
+//            restaurantsFromDb.add(restaurant);
+//        }
+//        return Convertor.convertEntityListToDTO(restaurantsFromDb);
 //    }
 
     private RestaurantModel restaurantEntityIntoModel(Restaurant restaurant){

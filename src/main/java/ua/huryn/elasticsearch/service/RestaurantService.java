@@ -33,6 +33,8 @@ public interface RestaurantService {
 
 //    List<RestaurantDTO> findByCategory(Category category);
 
+//    List<RestaurantDTO> searchElasticByNameAndAddress(String keywords);
+
     List<String> getCuisineTypeFromJson();
 
     void addDataToDb() throws IOException, InterruptedException, ApiException;

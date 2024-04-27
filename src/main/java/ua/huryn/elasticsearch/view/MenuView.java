@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.StreamResource;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
@@ -132,7 +133,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 //        final String path = scr;
 //        StreamResource imageResource = new StreamResource(restaurant.getName().toLowerCase() + "_image.jpg",
 //                () -> getClass().getResourceAsStream(path));
-//
+
         Image image = new Image();
             image.setSrc("https://pianavyshnia.com/wp-content/uploads/2022/10/logo.png");
         image.addClassNames("image");
@@ -141,16 +142,16 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Div info = new Div();
         info.addClassNames("d-flex flex-row justify-content-around");
 
-        Div name = new Div();
+        Div infoDiv = new Div();
 
-        name.addClassNames("info flex-column width-60");
+        infoDiv.addClassNames("info flex-column width-60");
         int end = Math.min(24, restaurant.getName().length());
         String route  = RouteConfiguration.forSessionScope()
                 .getUrl(RestaurantView.class, restaurant.getRestaurantId());
-        Anchor restName = new Anchor(route, restaurant.getName().substring(0, end));
-        restName.getStyle().setTextDecoration("none").setColor("000000FF");
+        Anchor restaurantName = new Anchor(route, restaurant.getName().substring(0, end));
+        restaurantName.getStyle().setTextDecoration("none").setColor("000000FF");
         Div resNameDiv = new Div();
-        resNameDiv.add(restName);
+        resNameDiv.add(restaurantName);
 
         String cuisine = restaurant.getCuisineType();
         Span cuisineType = null;
@@ -169,7 +170,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         checkboxValues.put(1, "₴ - ₴₴");
         checkboxValues.put(0, "₴");
         Div priceDiv = new Div(new Span(checkboxValues.get(restaurant.getPriceLevel())));
-        name.add( cuisineDiv, priceDiv);
+        infoDiv.add(resNameDiv, cuisineDiv, priceDiv);
 
 
         Div rate = new Div();
@@ -179,7 +180,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Text ratingValue = new Text(formattedRating);
 
         rate.add(ratingValue);
-        info.add(name, rate);
+        info.add(infoDiv, rate);
         div.add(imageContainer, info);
         return div;
     }

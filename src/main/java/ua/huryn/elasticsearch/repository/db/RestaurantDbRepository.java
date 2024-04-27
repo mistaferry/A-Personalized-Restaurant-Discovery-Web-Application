@@ -15,6 +15,8 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
 
     List<Restaurant> findByName(String name);
 
+    Restaurant findByPlaceId(String placeId);
+
     List<Restaurant> findByRating(double rating);
 
     List<Restaurant> findByLatitudeAndLongitude(double latitude, double longitude);

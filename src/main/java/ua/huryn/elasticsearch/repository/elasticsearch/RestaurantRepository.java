@@ -11,6 +11,8 @@ import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 public interface RestaurantRepository extends ElasticsearchRepository<RestaurantModel, Long>{
     RestaurantModel findByRestaurantId(Long id);
 
+//    List<RestaurantModel> findBySearchField(String search_field);
+
     List<RestaurantModel> findByPlaceId(String placeId);
 
     List<RestaurantModel> findByName(String name);

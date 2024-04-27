@@ -15,6 +15,8 @@ public class RestaurantModel {
     @Id
     @Field(type = FieldType.Long, name = "restaurant_id")
     private Long restaurantId;
+//    @Field(type = FieldType.Keyword, name = "restaurant_id")
+//    private String search_field;
     @Field(type = FieldType.Text, name = "place_id")
     private String placeId;
     @Field(type = FieldType.Text, name = "name")

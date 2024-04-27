@@ -1,3 +1,5 @@
+ALTER DATABASE db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 create table if not exists product
 (
     product_id bigint,
@@ -197,6 +199,239 @@ create table dish_type(
     name varchar(256)
 );
 
+create table dish(
+    dish_id int primary key auto_increment,
+    name varchar(256),
+    price double,
+    dish_type int,
+    cuisine_type varchar(256),
+    foreign key (dish_type) references dish_type (id)
+);
+
+create table ingredient(
+   ingredient_id int primary key auto_increment,
+    name varchar(256)
+);
+
+create table dish_ingredient
+(
+    dish_id   bigint,
+    ingredient_id bigint,
+    foreign key (dish_id) references dish (dish_id),
+    foreign key (ingredient_id) references ingredient (ingredient_id)
+);
+
+INSERT INTO dish_type (name) VALUES ('Soup'), ('Main Course'), ('Side Dish'), ('Dessert'), ('Appetizer'), ('Beverage'),('Burger'), ('Sandwich'), ('Salad'), ('Steak'), ('Pasta');
+
+INSERT INTO dish (name, price, dish_type, cuisine_type)
+VALUES
+    ('Borscht', 8.50, 1, 'Ukrainian'),
+    ('Holubtsi', 12.00, 2, 'Ukrainian'),
+    ('Varenyky', 10.00, 2, 'Ukrainian'),
+    ('Syrniki', 7.50, 4, 'Ukrainian'),
+    ('Kutia', 6.00, 4, 'Ukrainian'),
+    ('Olivier Salad', 9.00, 3, 'Ukrainian'),
+    ('Kholodets', 8.00, 1, 'Ukrainian'),
+    ('Chicken Kiev', 14.00, 2, 'Ukrainian'),
+    ('Kasha', 6.50, 3, 'Ukrainian'),
+    ('Medivnyk', 8.50, 4, 'Ukrainian'),
+    ('Kompot', 5.00, 6, 'Ukrainian'),
+    ('Cheeseburger', 12.00, 7, 'American'),
+    ('Philly Cheesesteak', 13.00, 8, 'American'),
+    ('Caesar Salad', 9.50, 9, 'American'),
+    ('Mac and Cheese', 8.00, 11, 'American'),
+    ('Grilled Chicken Sandwich', 11.50, 8, 'American'),
+    ('Ribeye Steak', 22.00, 10, 'American'),
+    ('BBQ Ribs', 18.00, 10, 'American'),
+    ('Buffalo Wings', 10.50, 7, 'American'),
+    ('Pancakes', 7.50, 4, 'American'),
+    ('Apple Pie', 6.50, 4, 'American'),
+    ('Spaghetti Carbonara', 12.50, 11, 'Italian'),  -- Pasta
+    ('Lasagna', 13.50, 11, 'Italian'),  -- Pasta
+    ('Risotto', 14.00, 2, 'Italian'),  -- Main Course
+    ('Margherita Pizza', 11.00, 2, 'Italian'),  -- Main Course
+    ('Minestrone Soup', 8.50, 1, 'Italian'),  -- Soup
+    ('Bruschetta', 7.50, 5, 'Italian'),  -- Appetizer
+    ('Tiramisu', 6.50, 4, 'Italian'),  -- Dessert
+    ('Panna Cotta', 6.00, 4, 'Italian'),  -- Dessert
+    ('Prosciutto e Melone', 9.00, 5, 'Italian'),  -- Appetizer
+    ('Caprese Salad', 8.50, 9, 'Italian'),
+    ('Sushi', 15.00, 8, 'Asian'),  -- Main Course
+    ('Pad Thai', 12.50, 11, 'Asian'),  -- Pasta/Main Course
+    ('Tom Yum Soup', 9.00, 1, 'Asian'),  -- Soup
+    ('Spring Rolls', 7.00, 5, 'Asian'),  -- Appetizer
+    ('Dumplings', 8.50, 7, 'Asian'),  -- Side Dish/Main Course
+    ('Miso Soup', 5.50, 1, 'Asian'),  -- Soup
+    ('Teriyaki Chicken', 13.50, 2, 'Asian'),  -- Main Course
+    ('Tempura', 10.00, 5, 'Asian'),  -- Appetizer
+    ('Matcha Ice Cream', 6.00, 4, 'Asian'),  -- Dessert
+    ('Bubble Tea', 4.50, 6, 'Asian');  -- Salad;
+
+INSERT INTO ingredient (name) VALUES
+  ('Beets'), ('Cabbage'), ('Potatoes'), ('Cheese'), ('Poppy Seeds'), ('Honey'),
+  ('Meat'), ('Rice'), ('Vegetables'), ('Flour'), ('Sugar'), ('Eggs'), ('Garlic'), ('Chicken'), ('Butter'), ('Bread Crumbs'), ('Buckwheat'),
+  ('Fruit'), ('Carrots'), ('Onions'), ('Gelatin'), ('Cheese'), ('Lettuce'), ('Tomato'), ('Beef'), ('Onions'), ('Parmesan'),
+  ('Croutons'), ('Chicken'), ('Butter'), ('Cream'), ('Pasta'), ('Pork'), ('BBQ Sauce'),
+  ('Flour'), ('Sugar'), ('Baking Powder'), ('Eggs'), ('Milk'), ('Syrup'), ('Apples'), ('Basil'), ('Wine'), ('Rice'), ('Nori'), ('Seaweed'), ('Fish'), ('Soy Sauce'), ('Vinegar'),
+  ('Shrimp'), ('Tofu'), ('Noodles'), ('Peanuts'), ('Lime'), ('Chicken'),
+  ('Mushrooms'), ('Lemongrass'), ('Cilantro'), ('Chili'), ('Mint'), ('Carrots'),
+  ('Green Onions'), ('Flour'), ('Eggs'), ('Matcha'), ('Green Tea'), ('Milk Tea'),
+  ('Tapioca Pearls'), ('Tempura Batter');
+
+-- Insert dish-ingredient relationships
+INSERT INTO dish_ingredient (dish_id, ingredient_id)
+VALUES
+((SELECT dish_id FROM dish WHERE name = 'Borscht'), (SELECT ingredient_id FROM ingredient WHERE name = 'Beets')),
+((SELECT dish_id FROM dish WHERE name = 'Borscht'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Borscht'), (SELECT ingredient_id FROM ingredient WHERE name = 'Vegetables')),
+((SELECT dish_id FROM dish WHERE name = 'Holubtsi'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cabbage')),
+((SELECT dish_id FROM dish WHERE name = 'Holubtsi'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Holubtsi'), (SELECT ingredient_id FROM ingredient WHERE name = 'Rice')),
+((SELECT dish_id FROM dish WHERE name = 'Varenyky'), (SELECT ingredient_id FROM ingredient WHERE name = 'Potatoes')),
+((SELECT dish_id FROM dish WHERE name = 'Varenyky'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Syrniki'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Syrniki'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Syrniki'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Syrniki'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Kutia'), (SELECT ingredient_id FROM ingredient WHERE name = 'Poppy Seeds')),
+((SELECT dish_id FROM dish WHERE name = 'Kutia'), (SELECT ingredient_id FROM ingredient WHERE name = 'Honey')),
+((SELECT dish_id FROM dish WHERE name = 'Olivier Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Vegetables')),
+((SELECT dish_id FROM dish WHERE name = 'Olivier Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Kholodets'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Kholodets'), (SELECT ingredient_id FROM ingredient WHERE name = 'Garlic')),
+((SELECT dish_id FROM dish WHERE name = 'Kholodets'), (SELECT ingredient_id FROM ingredient WHERE name = 'Carrots')),
+((SELECT dish_id FROM dish WHERE name = 'Kholodets'), (SELECT ingredient_id FROM ingredient WHERE name = 'Onions')),
+((SELECT dish_id FROM dish WHERE name = 'Kholodets'), (SELECT ingredient_id FROM ingredient WHERE name = 'Gelatin')),
+((SELECT dish_id FROM dish WHERE name = 'Chicken Kiev'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chicken')),
+((SELECT dish_id FROM dish WHERE name = 'Chicken Kiev'), (SELECT ingredient_id FROM ingredient WHERE name = 'Butter')),
+((SELECT dish_id FROM dish WHERE name = 'Chicken Kiev'), (SELECT ingredient_id FROM ingredient WHERE name = 'Bread Crumbs')),
+((SELECT dish_id FROM dish WHERE name = 'Kasha'), (SELECT ingredient_id FROM ingredient WHERE name = 'Buckwheat')),
+((SELECT dish_id FROM dish WHERE name = 'Medivnyk'), (SELECT ingredient_id FROM ingredient WHERE name = 'Honey')),
+((SELECT dish_id FROM dish WHERE name = 'Medivnyk'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Medivnyk'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Medivnyk'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Kompot'), (SELECT ingredient_id FROM ingredient WHERE name = 'Fruit')),
+((SELECT dish_id FROM dish WHERE name = 'Cheeseburger'), (SELECT ingredient_id FROM ingredient WHERE name = 'Beef')),
+((SELECT dish_id FROM dish WHERE name = 'Cheeseburger'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Cheeseburger'), (SELECT ingredient_id FROM ingredient WHERE name = 'Lettuce')),
+((SELECT dish_id FROM dish WHERE name = 'Cheeseburger'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Philly Cheesesteak'), (SELECT ingredient_id FROM ingredient WHERE name = 'Beef')),
+((SELECT dish_id FROM dish WHERE name = 'Philly Cheesesteak'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Philly Cheesesteak'), (SELECT ingredient_id FROM ingredient WHERE name = 'Onions')),
+((SELECT dish_id FROM dish WHERE name = 'Caesar Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Lettuce')),
+((SELECT dish_id FROM dish WHERE name = 'Caesar Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Parmesan')),
+((SELECT dish_id FROM dish WHERE name = 'Caesar Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Croutons')),
+((SELECT dish_id FROM dish WHERE name = 'Mac and Cheese'), (SELECT ingredient_id FROM ingredient WHERE name = 'Pasta')),
+((SELECT dish_id FROM dish WHERE name = 'Mac and Cheese'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Grilled Chicken Sandwich'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chicken')),
+((SELECT dish_id FROM dish WHERE name = 'Grilled Chicken Sandwich'), (SELECT ingredient_id FROM ingredient WHERE name = 'Lettuce')),
+((SELECT dish_id FROM dish WHERE name = 'Grilled Chicken Sandwich'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Ribeye Steak'), (SELECT ingredient_id FROM ingredient WHERE name = 'Beef')),
+((SELECT dish_id FROM dish WHERE name = 'BBQ Ribs'), (SELECT ingredient_id FROM ingredient WHERE name = 'Pork')),
+((SELECT dish_id FROM dish WHERE name = 'BBQ Ribs'), (SELECT ingredient_id FROM ingredient WHERE name = 'BBQ Sauce')),
+((SELECT dish_id FROM dish WHERE name = 'Buffalo Wings'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chicken')),
+((SELECT dish_id FROM dish WHERE name = 'Pancakes'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Pancakes'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Pancakes'), (SELECT ingredient_id FROM ingredient WHERE name = 'Milk')),
+((SELECT dish_id FROM dish WHERE name = 'Pancakes'), (SELECT ingredient_id FROM ingredient WHERE name = 'Syrup')),
+((SELECT dish_id FROM dish WHERE name = 'Apple Pie'), (SELECT ingredient_id FROM ingredient WHERE name = 'Apples')),
+((SELECT dish_id FROM dish WHERE name = 'Apple Pie'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Apple Pie'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Apple Pie'), (SELECT ingredient_id FROM ingredient WHERE name = 'Butter')),
+((SELECT dish_id FROM dish WHERE name = 'Spaghetti Carbonara'), (SELECT ingredient_id FROM ingredient WHERE name = 'Pasta')),
+((SELECT dish_id FROM dish WHERE name = 'Spaghetti Carbonara'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Spaghetti Carbonara'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Spaghetti Carbonara'), (SELECT ingredient_id FROM ingredient WHERE name = 'Bacon')),
+((SELECT dish_id FROM dish WHERE name = 'Lasagna'), (SELECT ingredient_id FROM ingredient WHERE name = 'Pasta')),
+((SELECT dish_id FROM dish WHERE name = 'Lasagna'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Lasagna'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Risotto'), (SELECT ingredient_id FROM ingredient WHERE name = 'Rice')),
+((SELECT dish_id FROM dish WHERE name = 'Risotto'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Risotto'), (SELECT ingredient_id FROM ingredient WHERE name = 'Butter')),
+((SELECT dish_id FROM dish WHERE name = 'Margherita Pizza'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Margherita Pizza'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Margherita Pizza'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Minestrone Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Vegetables')),
+((SELECT dish_id FROM dish WHERE name = 'Minestrone Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Onions')),
+((SELECT dish_id FROM dish WHERE name = 'Minestrone Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Garlic')),
+((SELECT dish_id FROM dish WHERE name = 'Bruschetta'), (SELECT ingredient_id FROM ingredient WHERE name = 'Bread Crumbs')),
+((SELECT dish_id FROM dish WHERE name = 'Bruschetta'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Bruschetta'), (SELECT ingredient_id FROM ingredient WHERE name = 'Garlic')),
+((SELECT dish_id FROM dish WHERE name = 'Tiramisu'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Tiramisu'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Tiramisu'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Panna Cotta'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cream')),
+((SELECT dish_id FROM dish WHERE name = 'Panna Cotta'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Panna Cotta'), (SELECT ingredient_id FROM ingredient WHERE name = 'Gelatin')),
+((SELECT dish_id FROM dish WHERE name = 'Prosciutto e Melone'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Prosciutto e Melone'), (SELECT ingredient_id FROM ingredient WHERE name = 'Fruit')),
+((SELECT dish_id FROM dish WHERE name = 'Caprese Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Caprese Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Caprese Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Basil')),
+((SELECT dish_id FROM dish WHERE name = 'Bouillabaisse'), (SELECT ingredient_id FROM ingredient WHERE name = 'Fish')),
+((SELECT dish_id FROM dish WHERE name = 'Bouillabaisse'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Bouillabaisse'), (SELECT ingredient_id FROM ingredient WHERE name = 'Garlic')),
+((SELECT dish_id FROM dish WHERE name = 'Coq au Vin'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chicken')),
+((SELECT dish_id FROM dish WHERE name = 'Coq au Vin'), (SELECT ingredient_id FROM ingredient WHERE name = 'Onions')),
+((SELECT dish_id FROM dish WHERE name = 'Coq au Vin'), (SELECT ingredient_id FROM ingredient WHERE name = 'Wine')),
+((SELECT dish_id FROM dish WHERE name = 'Ratatouille'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Ratatouille'), (SELECT ingredient_id FROM ingredient WHERE name = 'Zucchini')),
+((SELECT dish_id FROM dish WHERE name = 'Ratatouille'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggplant')),
+((SELECT dish_id FROM dish WHERE name = 'Tarte Tatin'), (SELECT ingredient_id FROM ingredient WHERE name = 'Apples')),
+((SELECT dish_id FROM dish WHERE name = 'Tarte Tatin'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Tarte Tatin'), (SELECT ingredient_id FROM ingredient WHERE name = 'Butter')),
+((SELECT dish_id FROM dish WHERE name = 'Escargots'), (SELECT ingredient_id FROM ingredient WHERE name = 'Snails')),
+((SELECT dish_id FROM dish WHERE name = 'Escargots'), (SELECT ingredient_id FROM ingredient WHERE name = 'Garlic')),
+((SELECT dish_id FROM dish WHERE name = 'Crêpes Suzette'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Crêpes Suzette'), (SELECT ingredient_id FROM ingredient WHERE name = 'Butter')),
+((SELECT dish_id FROM dish WHERE name = 'Crêpes Suzette'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sugar')),
+((SELECT dish_id FROM dish WHERE name = 'Niçoise Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tomato')),
+((SELECT dish_id FROM dish WHERE name = 'Niçoise Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tuna')),
+((SELECT dish_id FROM dish WHERE name = 'Niçoise Salad'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Cassoulet'), (SELECT ingredient_id FROM ingredient WHERE name = 'Pork')),
+((SELECT dish_id FROM dish WHERE name = 'Cassoulet'), (SELECT ingredient_id FROM ingredient WHERE name = 'Beans')),
+((SELECT dish_id FROM dish WHERE name = 'Cassoulet'), (SELECT ingredient_id FROM ingredient WHERE name = 'Sausage')),
+((SELECT dish_id FROM dish WHERE name = 'Quiche Lorraine'), (SELECT ingredient_id FROM ingredient WHERE name = 'Eggs')),
+((SELECT dish_id FROM dish WHERE name = 'Quiche Lorraine'), (SELECT ingredient_id FROM ingredient WHERE name = 'Bacon')),
+((SELECT dish_id FROM dish WHERE name = 'Quiche Lorraine'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Soupe à l\'Oignon'), (SELECT ingredient_id FROM ingredient WHERE name = 'Onions')),
+((SELECT dish_id FROM dish WHERE name = 'Soupe à l\'Oignon'), (SELECT ingredient_id FROM ingredient WHERE name = 'Beef Broth')),
+((SELECT dish_id FROM dish WHERE name = 'Soupe à l\'Oignon'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cheese')),
+((SELECT dish_id FROM dish WHERE name = 'Sushi'), (SELECT ingredient_id FROM ingredient WHERE name = 'Rice')),
+((SELECT dish_id FROM dish WHERE name = 'Sushi'), (SELECT ingredient_id FROM ingredient WHERE name = 'Nori')),
+((SELECT dish_id FROM dish WHERE name = 'Sushi'), (SELECT ingredient_id FROM ingredient WHERE name = 'Fish')),
+((SELECT dish_id FROM dish WHERE name = 'Pad Thai'), (SELECT ingredient_id FROM ingredient WHERE name = 'Noodles')),
+((SELECT dish_id FROM dish WHERE name = 'Pad Thai'), (SELECT ingredient_id FROM ingredient WHERE name = 'Peanuts')),
+((SELECT dish_id FROM dish WHERE name = 'Pad Thai'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chicken')),
+((SELECT dish_id FROM dish WHERE name = 'Pad Thai'), (SELECT ingredient_id FROM ingredient WHERE name = 'Lime')),
+((SELECT dish_id FROM dish WHERE name = 'Tom Yum Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Shrimp')),
+((SELECT dish_id FROM dish WHERE name = 'Tom Yum Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Mushrooms')),
+((SELECT dish_id FROM dish WHERE name = 'Tom Yum Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Lemongrass')),
+((SELECT dish_id FROM dish WHERE name = 'Tom Yum Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chili')),
+((SELECT dish_id FROM dish WHERE name = 'Spring Rolls'), (SELECT ingredient_id FROM ingredient WHERE name = 'Carrots')),
+((SELECT dish_id FROM dish WHERE name = 'Spring Rolls'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cilantro')),
+((SELECT dish_id FROM dish WHERE name = 'Spring Rolls'), (SELECT ingredient_id FROM ingredient WHERE name = 'Rice')),
+((SELECT dish_id FROM dish WHERE name = 'Dumplings'), (SELECT ingredient_id FROM ingredient WHERE name = 'Flour')),
+((SELECT dish_id FROM dish WHERE name = 'Dumplings'), (SELECT ingredient_id FROM ingredient WHERE name = 'Meat')),
+((SELECT dish_id FROM dish WHERE name = 'Miso Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tofu')),
+((SELECT dish_id FROM dish WHERE name = 'Miso Soup'), (SELECT ingredient_id FROM ingredient WHERE name = 'Seaweed')),
+((SELECT dish_id FROM dish WHERE name = 'Teriyaki Chicken'), (SELECT ingredient_id FROM ingredient WHERE name = 'Chicken')),
+((SELECT dish_id FROM dish WHERE name = 'Teriyaki Chicken'), (SELECT ingredient_id FROM ingredient WHERE name = 'Soy Sauce')),
+((SELECT dish_id FROM dish WHERE name = 'Tempura'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tempura Batter')),
+((SELECT dish_id FROM dish WHERE name = 'Matcha Ice Cream'), (SELECT ingredient_id FROM ingredient WHERE name = 'Matcha')),
+((SELECT dish_id FROM dish WHERE name = 'Matcha Ice Cream'), (SELECT ingredient_id FROM ingredient WHERE name = 'Cream')),
+((SELECT dish_id FROM dish WHERE name = 'Bubble Tea'), (SELECT ingredient_id FROM ingredient WHERE name = 'Milk Tea')),
+((SELECT dish_id FROM dish WHERE name = 'Bubble Tea'), (SELECT ingredient_id FROM ingredient WHERE name = 'Tapioca Pearls'));
+
+create table restaurant_dish
+(
+    dish_id   bigint,
+    restaurant_id bigint,
+    foreign key (dish_id) references dish (dish_id),
+    foreign key (restaurant_id) references restaurant (restaurant_id)
+);
+
+
 INSERT INTO dish_type (name)
 VALUES
     ('Салат'),
@@ -209,16 +444,6 @@ VALUES
     ('Паста'),
     ('Рисова страва'),
     ('Локшина');
-
-create table dish(
-     dish_id int primary key auto_increment,
-     name varchar(256),
-     description varchar(256),
-     price double,
-     dish_type int,
-     cuisine_type varchar(256),
-     foreign key (dish_type) references dish_type (id)
-);
 
 INSERT INTO dish (name, description, price, dish_type, cuisine_type)
 VALUES
