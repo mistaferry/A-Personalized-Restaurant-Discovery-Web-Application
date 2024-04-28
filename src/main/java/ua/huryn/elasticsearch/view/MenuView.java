@@ -13,7 +13,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.StreamResource;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +21,6 @@ import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
-import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
@@ -201,7 +199,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 
     @NotNull
     private Div cuisineTypeFilter() {
-        List<String> cuisineTypes = restaurantService.getCuisineTypeFromJson();
+        List<String> cuisineTypes = restaurantService.getCuisineType();
         Div cuisineTypeDiv = new Div();
         cuisineTypeDiv.addClassNames("main-div");
 

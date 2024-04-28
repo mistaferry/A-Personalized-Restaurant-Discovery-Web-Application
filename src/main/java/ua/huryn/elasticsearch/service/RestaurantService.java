@@ -35,7 +35,7 @@ public interface RestaurantService {
 
 //    List<RestaurantDTO> searchElasticByNameAndAddress(String keywords);
 
-    List<String> getCuisineTypeFromJson();
+    List<String> getCuisineType();
 
     void addDataToDb() throws IOException, InterruptedException, ApiException;
 

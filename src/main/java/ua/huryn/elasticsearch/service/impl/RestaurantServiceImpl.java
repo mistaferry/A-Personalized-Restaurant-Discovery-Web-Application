@@ -6,7 +6,6 @@ import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
 import com.google.maps.model.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -30,6 +29,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -298,13 +298,14 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void addDataToDb() throws IOException, InterruptedException, ApiException {
         List<LatLng> locationsList = getLocationFromJson();
-        List<String> cuisineList = getCuisineTypeFromJson();
+        List<String> cuisineList = getCuisineType();
         GeoApiContext context = getGeoApiContext();
 
         log.info("Received information about {} cuisines and {} locations", cuisineList.size(), locationsList.size());
 
         for (String cuisine: cuisineList){
             for (LatLng loc: locationsList){
+                log.info("Get restaurants for location: {}", loc);
                 PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
                         .radius(3500)
                         .type(PlaceType.RESTAURANT)
@@ -374,22 +375,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    public List<String> getCuisineTypeFromJson() {
-        List<String> cuisineTypeList = new ArrayList<>();
-        String path = localDirectory + "/db_data/cuisine_types.json";
-        try {
-            String content = "";
-            content = new String(Files.readAllBytes(Paths.get(path)));
-            JSONArray jsonArray = new JSONArray(content);
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
-            JSONArray cuisineTypesArray = jsonObject.getJSONArray("cuisine_types");
-            for (int i = 0; i < cuisineTypesArray.length(); i++) {
-                cuisineTypeList.add(cuisineTypesArray.getString(i));
-            }
-        }catch (IOException e){
-            log.error("Немає доступу до файлу: " + path);
-        }
-        return cuisineTypeList;
+    public List<String> getCuisineType() {
+        return Arrays.asList(generalProperties.getCuisineTypes());
     }
 
     private List<LatLng> getLocationFromJson() {
@@ -407,7 +394,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 locationsList.add(l);
             }
         }catch (IOException e){
-            log.error("Немає доступу до файлу: {}", path);
+            log.error("Access error for file: {}", path);
         }
         return locationsList;
     }
@@ -445,7 +432,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 return null;
             }
         } catch (IOException e) {
-//            System.err.println("Помилка при читанні зображення: " + e.getMessage());
             return null;
         }
     }
@@ -453,7 +439,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private String setRestaurantImagePath(GeoApiContext context, Restaurant restaurant, PlacesSearchResult restaurantResult){
         try {
             Photo[] photos = restaurantResult.photos;
-            ImageResult photo = null;
+            ImageResult photo;
             photo = new PhotoRequest(context)
                     .photoReference(photos[0].photoReference)
                     .maxWidth(photos[0].width)
@@ -471,7 +457,6 @@ public class RestaurantServiceImpl implements RestaurantService {
             String imagePath = "/db_data/restaurant_images/" + restaurantResult.placeId + "_image.jpg";
             String path = localDirectory + imagePath;
             // create path if it doesn't exist
-            log.info("path for parent: {}", Paths.get(path).toAbsolutePath().getParent().toString());
             Files.createDirectories(Paths.get(path).toAbsolutePath().getParent());
             // Write the byte array to the file
             try (FileOutputStream fos = new FileOutputStream(path)) {
@@ -501,7 +486,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 restaurant.setWebsite(website);
             }
         } catch (Exception e) {
-            log.error("Неможливо отримати дані ресторану з placeId: {}", restaurantResult.placeId);
+            log.error("Can't get data for restaurant with placeId {}: {}", restaurantResult.placeId, e.getMessage());
         }
     }
 
@@ -540,9 +525,9 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             mapper.writeValue(file, restaurants);
 
-            log.info("Дані збережено у файл restaurants.json");
+            log.info("Data was saved in file restaurants.json");
         } catch (Exception e) {
-            log.error("Неможливо зберегти дані в файл: {}", e.getMessage());
+            log.error("Can't save data in file: {}", e.getMessage());
         }
     }
 
@@ -567,11 +552,8 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
 
             restaurantDbRepository.saveAll(restaurants);
-//            System.out.println("Успішно отримано дані з файлу");
             log.info("Data was added from file");
         } catch (IOException e) {
-//            e.printStackTrace();
-//            System.err.println("Неможливо отримані дані з файлу.");
             log.error("There was a problem getting data from file: {}", e.getMessage());
         }
     }

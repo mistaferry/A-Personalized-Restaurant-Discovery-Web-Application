@@ -29,12 +29,17 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-bootstrap:
-  addData: ${ADD_DATA:false}
-  google:
-    apiKey: ${API_KEY}
 logging:
   level:
     ua:
       huryn:
         elasticsearch: ${LOGGING_LEVEL:INFO}
+
+startup:
+  add-data: ${ADD_DATA:false}
+google:
+  api-key: ${API_KEY}
+app:
+  local-directory: local-resource
+  cuisine-types: ukrainian,american,italian,french,german,asian,greek,mexican,vegan
+
