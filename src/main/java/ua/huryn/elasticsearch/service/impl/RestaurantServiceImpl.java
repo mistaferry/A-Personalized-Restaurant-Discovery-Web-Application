@@ -17,7 +17,7 @@ import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.model.CategoryModel;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
-import ua.huryn.elasticsearch.config.BootstrapProperties;
+import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
 import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
@@ -36,12 +36,20 @@ import java.util.regex.Pattern;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantDbRepository restaurantDbRepository;
     private final CategoryDbRepository categoryDbRepository;
-    private final BootstrapProperties bootstrapProperties;
+    private final GeneralProperties generalProperties;
+    private final String localDirectory;
+
+    public RestaurantServiceImpl(RestaurantRepository restaurantRepository, RestaurantDbRepository restaurantDbRepository, CategoryDbRepository categoryDbRepository, GeneralProperties generalProperties) {
+        this.restaurantRepository = restaurantRepository;
+        this.restaurantDbRepository = restaurantDbRepository;
+        this.categoryDbRepository = categoryDbRepository;
+        this.generalProperties = generalProperties;
+        localDirectory=generalProperties.getLocalDirectory();
+    }
 
     @Override
     public List<RestaurantDTO> findByRating(double rating) {
@@ -188,9 +196,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         return filtered;
     }
 
-    private /*static*/ GeoApiContext getGeoApiContext() throws IOException {
+    private GeoApiContext getGeoApiContext() throws IOException {
         return new GeoApiContext.Builder()
-                .apiKey(bootstrapProperties.getApiKey())
+                .apiKey(generalProperties.getGoogleApiKey())
                 .build();
     }
 
@@ -368,7 +376,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     public List<String> getCuisineTypeFromJson() {
         List<String> cuisineTypeList = new ArrayList<>();
-        String path = "src/main/resources/db_data/cuisine_types.json";
+        String path = localDirectory + "/db_data/cuisine_types.json";
         try {
             String content = "";
             content = new String(Files.readAllBytes(Paths.get(path)));
@@ -379,14 +387,14 @@ public class RestaurantServiceImpl implements RestaurantService {
                 cuisineTypeList.add(cuisineTypesArray.getString(i));
             }
         }catch (IOException e){
-            System.err.println("Немає доступу до файлу: " + path);
+            log.error("Немає доступу до файлу: " + path);
         }
         return cuisineTypeList;
     }
 
     private List<LatLng> getLocationFromJson() {
         List<LatLng> locationsList = new ArrayList<>();
-        String path = "src/main/resources/db_data/locations.json";
+        String path = localDirectory + "/db_data/locations.json";
         try {
             String content = "";
             content = new String(Files.readAllBytes(Paths.get(path)));
@@ -399,7 +407,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 locationsList.add(l);
             }
         }catch (IOException e){
-            System.err.println("Немає доступу до файлу: " + path);
+            log.error("Немає доступу до файлу: {}", path);
         }
         return locationsList;
     }
@@ -453,22 +461,24 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .await();
             byte[] imageData = photo.imageData;
 
-            String parentDirectory = "src/main/resources/";
-            String outputDirPath = parentDirectory + "db_data/restaurant_images";
+            String outputDirPath = localDirectory + "/db_data/restaurant_images";
             File outputDir = new File(outputDirPath);
 
             if (!outputDir.exists()) {
                 outputDir.mkdirs();
             }
 
-            String imagePath = "db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
-            String path = parentDirectory + imagePath;
+            String imagePath = "/db_data/restaurant_images/" + restaurantResult.placeId + "_image.jpg";
+            String path = localDirectory + imagePath;
+            // create path if it doesn't exist
+            log.info("path for parent: {}", Paths.get(path).toAbsolutePath().getParent().toString());
+            Files.createDirectories(Paths.get(path).toAbsolutePath().getParent());
             // Write the byte array to the file
             try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(imageData);
-                System.out.println("Image saved to: " + path);
+                log.debug("Image saved to: {}", path);
             } catch (IOException e) {
-                System.err.println("Error saving image: " + e.getMessage());
+                log.error("Error saving image: {}", e.getMessage());
             }
 
             return imagePath;
@@ -491,7 +501,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 restaurant.setWebsite(website);
             }
         } catch (Exception e) {
-            System.err.println("Неможливо отримати дані ресторану з placeId: " + restaurantResult.placeId);
+            log.error("Неможливо отримати дані ресторану з placeId: {}", restaurantResult.placeId);
         }
     }
 
@@ -524,14 +534,15 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             ObjectMapper mapper = new ObjectMapper();
 
-            File file = new File("src/main/resources/db_data/restaurants.json");
+            Files.createDirectories(Paths.get(localDirectory,"db_data"));
+
+            File file = new File(localDirectory, "db_data/restaurants.json");
 
             mapper.writeValue(file, restaurants);
 
-            System.out.println("Дані збережено у файл restaurants.json");
+            log.info("Дані збережено у файл restaurants.json");
         } catch (Exception e) {
-            System.err.println("Неможливо зберегти дані в файл.");
-            e.printStackTrace();
+            log.error("Неможливо зберегти дані в файл: {}", e.getMessage());
         }
     }
 
@@ -540,7 +551,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            List<Restaurant> restaurants = objectMapper.readValue(new File("src/main/resources/db_data/restaurants.json"),
+            List<Restaurant> restaurants = objectMapper.readValue(new File(localDirectory, "db_data/restaurants.json"),
                     new TypeReference<List<Restaurant>>() {});
 
             for (Restaurant restaurant : restaurants) {
