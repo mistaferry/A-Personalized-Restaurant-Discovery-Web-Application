@@ -29,9 +29,11 @@ public class FavouriteView extends VerticalLayout {
         this.restaurantService = restaurantService;
         this.restaurantDbRepository = restaurantDbRepository;
         add(new Text("Favourite"));
-        List<Restaurant> list = restaurantDbRepository.findAll();
-        for (Restaurant restaurant: list){
-            add(new Text(restaurant.getCategories().get(0).getName()));
-        }
+//        List<Restaurant> list = restaurantDbRepository.findAll();
+//        for (Restaurant restaurant: list){
+//            add(new Text(restaurant.getCategories().get(0).getName()));
+//        }
+//        List<RestaurantModel> restaurantModels = restaurantService.search("Pu");
+//        System.out.println(restaurantModels.size());
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.google.maps.errors.ApiException;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 
 public interface RestaurantService {
     public RestaurantDTO findByRestaurantId(Long id);
@@ -24,7 +25,7 @@ public interface RestaurantService {
 
     List<RestaurantDTO> getAll();
 
-    List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String firstPoint);
+    List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String routeDeparturePoint, String fullTextSearch);
 
     List<RestaurantDTO> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantDTO> filtered);
 
@@ -33,9 +34,11 @@ public interface RestaurantService {
 
 //    List<RestaurantDTO> findByCategory(Category category);
 
-//    List<RestaurantDTO> searchElasticByNameAndAddress(String keywords);
-
     List<String> getCuisineTypeFromJson();
+
+    List<RestaurantModel> findRestaurantsBySearchString(List<String> parts);
+
+    List<RestaurantDTO> getRestaurantsDTOBySearchString(String searchString, List<RestaurantDTO> restaurantList);
 
     void addDataToDb() throws IOException, InterruptedException, ApiException;
 

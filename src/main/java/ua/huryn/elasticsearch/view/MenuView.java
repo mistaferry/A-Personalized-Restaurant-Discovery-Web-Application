@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
+import ua.huryn.elasticsearch.controller.RestaurantController;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.service.RestaurantService;
@@ -37,16 +38,20 @@ import java.util.stream.Collectors;
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
 public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final RestaurantService restaurantService;
+    private final RestaurantController controller;
     CheckboxGroup<Integer> ratingCheckbox = new CheckboxGroup<>();
     CheckboxGroup<Integer> priceLevelCheckbox = new CheckboxGroup<>();
     CheckboxGroup<Integer> routeCheckbox = new CheckboxGroup<>();
     CheckboxGroup<String> cuisineCheckbox = new CheckboxGroup<>();
     TextField firstPoint = new TextField();
+    Button searchButton = new Button();
+    TextField searchField = new TextField();
     Div menuDiv;
 
     @Autowired
-    public MenuView(RestaurantService restaurantService) {
+    public MenuView(RestaurantService restaurantService, RestaurantController controller) {
         this.restaurantService = restaurantService;
+        this.controller = controller;
         add(createSearchSection());
         add(createDownSection());
 
@@ -62,8 +67,12 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
             updateMenu();
         });
 
-        routeCheckbox.addValueChangeListener(event -> {
-            System.out.println(routeCheckbox.getSelectedItems());
+//        routeCheckbox.addValueChangeListener(event -> {
+//            System.out.println(routeCheckbox.getSelectedItems());
+//            updateMenu();
+//        });
+
+        searchButton.addClickListener(event -> {
             updateMenu();
         });
     }
@@ -94,12 +103,11 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Div searchSection = new Div();
         searchSection.addClassNames("search-section basic");
 
-        TextField searchField = new TextField();
         searchField.setPlaceholder("Search...");
         searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
         searchField.addClassName("search-field");
 
-        Button searchButton = new Button("Find");
+        searchButton.setText("Find");
         searchButton.addClassNames("search-button");
 
         searchSection.add(searchField, searchButton);
@@ -135,7 +143,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 //                () -> getClass().getResourceAsStream(path));
 
         Image image = new Image();
-            image.setSrc("https://pianavyshnia.com/wp-content/uploads/2022/10/logo.png");
+        image.setSrc("https://pianavyshnia.com/wp-content/uploads/2022/10/logo.png");
         image.addClassNames("image");
         imageContainer.add(image);
 
@@ -146,7 +154,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 
         infoDiv.addClassNames("info flex-column width-60");
         int end = Math.min(24, restaurant.getName().length());
-        String route  = RouteConfiguration.forSessionScope()
+        String route = RouteConfiguration.forSessionScope()
                 .getUrl(RestaurantView.class, restaurant.getRestaurantId());
         Anchor restaurantName = new Anchor(route, restaurant.getName().substring(0, end));
         restaurantName.getStyle().setTextDecoration("none").setColor("000000FF");
@@ -155,10 +163,10 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 
         String cuisine = restaurant.getCuisineType();
         Span cuisineType = null;
-        if(!cuisine.isBlank()) {
+        if (!cuisine.isBlank()) {
             cuisine = cuisine.substring(0, 1).toUpperCase() + cuisine.substring(1);
             cuisineType = new Span(cuisine + " cuisine");
-        }else{
+        } else {
             cuisineType = new Span("");
         }
         cuisineType.getStyle().setColor("#0074D9").setFontSize("smaller").setFontWeight(Style.FontWeight.BOLD);
@@ -176,7 +184,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Div rate = new Div();
         rate.addClassNames("info width-30");
 
-        String formattedRating = String.format("⭐ "+ Math.round(restaurant.getRating()));
+        String formattedRating = String.format("⭐ " + Math.round(restaurant.getRating()));
         Text ratingValue = new Text(formattedRating);
 
         rate.add(ratingValue);
@@ -192,9 +200,9 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Div cuisineType = cuisineTypeFilter();
         Div rating = ratingFilter();
         Div price = priceFilter();
-        Div route = routeFilter();
+//        Div route = routeFilter();
 
-        filtersDiv.add(cuisineType, rating, price, route);
+        filtersDiv.add(cuisineType, rating, price);
 
         return filtersDiv;
     }
@@ -218,7 +226,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     @NotNull
-    private Div ratingFilter(){
+    private Div ratingFilter() {
         Div ratingDiv = new Div();
         ratingDiv.addClassNames("main-div");
 
@@ -244,7 +252,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     @NotNull
-    private Div priceFilter(){
+    private Div priceFilter() {
         Div priceDiv = new Div();
         priceDiv.addClassNames("main-div");
 
@@ -269,41 +277,41 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         return priceDiv;
     }
 
-    @NotNull
-    private Div routeFilter(){
-        Div routeDiv = new Div();
-        routeDiv.addClassNames("main-div");
-
-        Div checkboxContainer = new Div();
-        checkboxContainer.addClassNames("d-flex flex-wrap justify-content-between border-top border-bottom pd-2");
-
-        Map<Integer, String> checkboxValues = new HashMap<>();
-        checkboxValues.put(2, "Пішки");
-        checkboxValues.put(1, "Машина");
-        checkboxValues.put(0, "Географічна віддаленість");
-
-        routeCheckbox.setLabel("Type of transport");
-        routeCheckbox.setItems(2, 1, 0);
-        routeCheckbox.setItemLabelGenerator(checkboxValues::get);
-        routeCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
-
-        String regexPattern = "^[a-zA-Zа-яА-ЯїЇіІєЄ0-9 .]+, [0-9]{1,3}$";
-        firstPoint.setPattern(regexPattern);
-        firstPoint.setErrorMessage("Invalid format. Should be 'address, number' or 'coordinates, number'.");
-
-        firstPoint.setValueChangeMode(ValueChangeMode.EAGER);
-
-        firstPoint.addValueChangeListener(event -> {
-            if (firstPoint.isInvalid()) {
-                System.out.println("Invalid input");
-            }
-        });
-
-        checkboxContainer.add(firstPoint, routeCheckbox);
-        routeDiv.add(checkboxContainer);
-
-        return routeDiv;
-    }
+//    @NotNull
+//    private Div routeFilter(){
+//        Div routeDiv = new Div();
+//        routeDiv.addClassNames("main-div");
+//
+//        Div checkboxContainer = new Div();
+//        checkboxContainer.addClassNames("d-flex flex-wrap justify-content-between border-top border-bottom pd-2");
+//
+//        Map<Integer, String> checkboxValues = new HashMap<>();
+//        checkboxValues.put(2, "Пішки");
+//        checkboxValues.put(1, "Машина");
+//        checkboxValues.put(0, "Географічна віддаленість");
+//
+//        routeCheckbox.setLabel("Type of transport");
+//        routeCheckbox.setItems(2, 1, 0);
+//        routeCheckbox.setItemLabelGenerator(checkboxValues::get);
+//        routeCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+//
+//        String regexPattern = "^[a-zA-Zа-яА-ЯїЇіІєЄ0-9 .]+, [0-9]{1,3}$";
+//        firstPoint.setPattern(regexPattern);
+//        firstPoint.setErrorMessage("Invalid format. Should be 'address, number' or 'coordinates, number'.");
+//
+//        firstPoint.setValueChangeMode(ValueChangeMode.EAGER);
+//
+//        firstPoint.addValueChangeListener(event -> {
+//            if (firstPoint.isInvalid()) {
+//                System.out.println("Invalid input");
+//            }
+//        });
+//
+//        checkboxContainer.add(firstPoint, routeCheckbox);
+//        routeDiv.add(checkboxContainer);
+//
+//        return routeDiv;
+//    }
 
     private List<Integer> ratingCheckboxListener() {
         Set<Integer> selectedItems = ratingCheckbox.getValue();
@@ -420,7 +428,9 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<Integer> selectedPrices = priceCheckboxListener();
         List<Integer> selectedRating = ratingCheckboxListener();
         List<Integer> selectedRoutes = routeCheckboxListener();
+        String routeDeparturePoint = firstPoint.getValue();
+        String fullTextSearch = searchField.getValue();
 
-        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, firstPoint.getValue());
+        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, routeDeparturePoint, fullTextSearch);
     }
 }
