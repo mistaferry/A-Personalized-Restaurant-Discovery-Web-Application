@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Entity
@@ -15,13 +17,17 @@ public class Dish {
     private Long id;
     @Column(name = "name")
     private String name;
-    @Column(name = "description")
-    private String description;
     @Column(name = "price")
     private Double price;
     @ManyToOne
     @JoinColumn(name = "dish_type", referencedColumnName = "id")
     private DishType dishType;
     @Column(name = "cuisine_type")
-    private String cuisine_type;
+    private String cuisineType;
+    @OneToMany
+    @JoinTable(
+            name = "dish_ingredient",
+            joinColumns = @JoinColumn(name = "dish_id"),
+            inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
+    List<Ingredient> ingredients;
 }

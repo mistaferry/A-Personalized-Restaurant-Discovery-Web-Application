@@ -22,13 +22,14 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.entity.db.Category;
+import ua.huryn.elasticsearch.entity.db.Dish;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.config.BootstrapProperties;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
+import ua.huryn.elasticsearch.repository.db.DishDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
-import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
@@ -37,8 +38,7 @@ import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,8 +48,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
-    private final RestaurantRepository restaurantRepository;
     private final RestaurantDbRepository restaurantDbRepository;
+    private final DishDbRepository dishDbRepository;
     private final CategoryDbRepository categoryDbRepository;
     private final BootstrapProperties bootstrapProperties;
     @Autowired
@@ -246,10 +246,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         return matcher.matches();
     }
 
-    private boolean isAddress(String text) {
-        return !isGeographicCoordinates(text);
-    }
-
     private List<RestaurantDTO> filteredByCuisineType(List<String> cuisineTypes, List<RestaurantDTO> filteredData){
         if(cuisineTypes != null && !cuisineTypes.isEmpty()){
             List<RestaurantDTO> filtered = new ArrayList<>();
@@ -360,7 +356,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant existsObject = restaurantDbRepository.findByPlaceId(result.placeId);
             if (existsObject == null) {
                 log.debug("The restaurant wasn't find. Let's add it");
-                Restaurant restaurant = getItem(result, context, cuisine);
+                Restaurant restaurant = getRestaurantData(result, context, cuisine);
                 log.debug("Add restaurant: {}", restaurant);
                 restaurantDbRepository.save(restaurant);
                 countOfSavedRestaurants++;
@@ -410,7 +406,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return locationsList;
     }
 
-    private Restaurant getItem(PlacesSearchResult restaurantResult, GeoApiContext context, String cuisine){
+    private Restaurant getRestaurantData(PlacesSearchResult restaurantResult, GeoApiContext context, String cuisine){
         Restaurant restaurant = new Restaurant();
         restaurant.setPlaceId(restaurantResult.placeId);
         restaurant.setName(restaurantResult.name);
@@ -425,11 +421,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         }else{
             restaurant.setPhotoRef(null);
         }
-        List<Category> categoriesList = getCategories(restaurantResult);
-
-        setItemDetails(restaurantResult, restaurant, context);
-
-        restaurant.setCategories(categoriesList);
+        setPriceLevelAndWebsite(restaurantResult, restaurant, context);
+        restaurant.setCategories(getCategories(restaurantResult));
+        restaurant.setDishes(getDishes(cuisine));
         return restaurant;
     }
 
@@ -483,7 +477,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private static void setItemDetails(PlacesSearchResult restaurantResult, Restaurant restaurant, GeoApiContext context) {
+    private static void setPriceLevelAndWebsite(PlacesSearchResult restaurantResult, Restaurant restaurant, GeoApiContext context) {
         try {
             PlaceDetails details = PlacesApi.placeDetails(context, restaurantResult.placeId).await();
             PriceLevel priceLev = details.priceLevel;
@@ -521,6 +515,11 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
         }
         return categoriesList;
+    }
+
+
+    private List<Dish> getDishes(String cuisineType){
+        return dishDbRepository.findByCuisineType(cuisineType);
     }
 
     @Override

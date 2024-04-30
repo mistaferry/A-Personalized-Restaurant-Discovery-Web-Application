@@ -2,7 +2,6 @@ package ua.huryn.elasticsearch.entity.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import ua.huryn.elasticsearch.entity.model.CategoryModel;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,6 +21,6 @@ public class RestaurantDTO implements Serializable {
     private String website;
     private String photoRef;
     private String cuisineType;
-    private List<CategoryModel> categories;
-    private List<CategoryModel> dishes;
+    private List<CategoryDTO> categories;
+    private List<DishDTO> dishes;
 }

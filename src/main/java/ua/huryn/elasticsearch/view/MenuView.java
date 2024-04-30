@@ -2,28 +2,38 @@ package ua.huryn.elasticsearch.view;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.StreamResource;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ua.huryn.elasticsearch.MainView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
-import ua.huryn.elasticsearch.controller.RestaurantController;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
-import ua.huryn.elasticsearch.entity.model.RestaurantModel;
+import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
@@ -38,20 +48,24 @@ import java.util.stream.Collectors;
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
 public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final RestaurantService restaurantService;
-    private final RestaurantController controller;
+    private final DishService dishService;
     CheckboxGroup<Integer> ratingCheckbox = new CheckboxGroup<>();
     CheckboxGroup<Integer> priceLevelCheckbox = new CheckboxGroup<>();
     CheckboxGroup<Integer> routeCheckbox = new CheckboxGroup<>();
     CheckboxGroup<String> cuisineCheckbox = new CheckboxGroup<>();
-    TextField firstPoint = new TextField();
-    Button searchButton = new Button();
-    TextField searchField = new TextField();
+    CheckboxGroup<String> dishesCheckbox = new CheckboxGroup<>();
+    Button dishesSaveButton;
+    ComboBox<String> dishComboBox = new ComboBox<>("Dish");
+    TextField routesDeparturePoint = new TextField();
+    TextField fullTextSearchField = new TextField();
+    Button fullTextButton = new Button();
     Div menuDiv;
 
     @Autowired
-    public MenuView(RestaurantService restaurantService, RestaurantController controller) {
+    public MenuView(RestaurantService restaurantService, DishService dishService) {
         this.restaurantService = restaurantService;
-        this.controller = controller;
+        this.dishService = dishService;
+
         add(createSearchSection());
         add(createDownSection());
 
@@ -72,9 +86,14 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 //            updateMenu();
 //        });
 
-        searchButton.addClickListener(event -> {
+        dishesCheckbox.addValueChangeListener(event -> {
+            System.out.println(dishesCheckbox.getSelectedItems());
+        });
+
+        fullTextButton.addClickListener(event -> {
             updateMenu();
         });
+
     }
 
     private void updateMenu() {
@@ -103,14 +122,14 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Div searchSection = new Div();
         searchSection.addClassNames("search-section basic");
 
-        searchField.setPlaceholder("Search...");
-        searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
-        searchField.addClassName("search-field");
+        fullTextSearchField.setPlaceholder("Search...");
+        fullTextSearchField.setPrefixComponent(VaadinIcon.SEARCH.create());
+        fullTextSearchField.addClassName("search-field");
 
-        searchButton.setText("Find");
-        searchButton.addClassNames("search-button");
+        fullTextButton.setText("Find");
+        fullTextButton.addClassNames("search-button");
 
-        searchSection.add(searchField, searchButton);
+        searchSection.add(fullTextSearchField, fullTextButton);
 
         return searchSection;
     }
@@ -201,8 +220,9 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Div rating = ratingFilter();
         Div price = priceFilter();
 //        Div route = routeFilter();
+        Div dishes = dishesFilter();
 
-        filtersDiv.add(cuisineType, rating, price);
+        filtersDiv.add(cuisineType, rating, price, dishes);
 
         return filtersDiv;
     }
@@ -312,6 +332,95 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 //
 //        return routeDiv;
 //    }
+
+    @NotNull
+    private Div dishesFilter() {
+        Div dishDiv = new Div();
+        dishDiv.addClassNames("main-div");
+
+        Div dishesContainer = new Div();
+        dishesContainer.addClassNames("d-flex flex-wrap justify-content-between border-top border-bottom");
+
+        Map<Long, String> checkboxValues = dishService.getAllDishesNames();
+        dishesCheckbox.setItems(checkboxValues.values());
+        dishesCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+
+
+//        dishDiv.add();
+
+        Dialog dialog = addDialogElement();
+        Button button = new Button("Show all", e -> dialog.open());
+        dishDiv.add(dialog, button);
+
+        return dishDiv;
+    }
+
+    private Dialog addDialogElement(){
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Select dishes");
+
+        VerticalLayout dialogLayout = createDialogLayout();
+        dialog.add(dialogLayout);
+
+        dishesSaveButton = createSaveButton(dialog);
+
+        Button cancelButton = new Button("Cancel", e -> dialog.close());
+        dialog.getFooter().add(cancelButton, dishesSaveButton);
+
+        return dialog;
+    }
+
+    private VerticalLayout createDialogLayout() {
+//        int columns = 3;
+//        VerticalLayout gridLayout = new VerticalLayout();
+//        gridLayout.setSpacing(false);
+//
+//        List<Checkbox> checkboxes = dishesCheckbox.getChildren()
+//                .filter(component -> component instanceof Checkbox)
+//                .map(component -> (Checkbox) component)
+//                .toList();
+//
+//        int size = checkboxes.size();
+//        int currentIndex = 0;
+//
+//        while (currentIndex < size) {
+//            HorizontalLayout row = new HorizontalLayout();
+//            row.setSpacing(true);
+//            row.getStyle().setJustifyContent(Style.JustifyContent.SPACE_BETWEEN);
+//            row.getStyle().setWidth("100%");
+//            for (int i = 0; i < columns; i++) {
+//                if (currentIndex < size) {
+//                    Checkbox checkbox = dishesCheckbox.getChildren().;
+//                    checkbox.getStyle().setWidth("30%");
+//
+//                    row.add(checkbox);
+//                    currentIndex++;
+//                }
+//            }
+//            gridLayout.add(row);
+//        }
+//        return gridLayout;
+
+
+        VerticalLayout dialogLayout = new VerticalLayout();
+
+        dishComboBox.setItems(dishService.getAllDishesNames().values());
+        dishComboBox.setItemLabelGenerator(String::toString);
+
+        dialogLayout.add(dishComboBox, dishesCheckbox);
+        return dialogLayout;
+    }
+
+    private Button createSaveButton(Dialog dialog) {
+        Button button = new Button("Save", e -> {
+            System.out.println(dishesCheckbox.getSelectedItems());
+            updateMenu();
+            dialog.close();
+        });
+
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        return button;
+    }
 
     private List<Integer> ratingCheckboxListener() {
         Set<Integer> selectedItems = ratingCheckbox.getValue();
@@ -428,9 +537,9 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<Integer> selectedPrices = priceCheckboxListener();
         List<Integer> selectedRating = ratingCheckboxListener();
         List<Integer> selectedRoutes = routeCheckboxListener();
-        String routeDeparturePoint = firstPoint.getValue();
-        String fullTextSearch = searchField.getValue();
+        String routeDeparturePointValue = routesDeparturePoint.getValue();
+        String fullTextSearch = fullTextSearchField.getValue();
 
-        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, routeDeparturePoint, fullTextSearch);
+        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, routeDeparturePointValue, fullTextSearch);
     }
 }

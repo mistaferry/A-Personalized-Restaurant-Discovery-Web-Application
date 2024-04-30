@@ -1,1 +1,5 @@
+# search for Puzata Hata
 GET http://localhost:8080/api/restaurants/search?string=uzata%20hata
+
+# search for Puzata Hata, Shota Rustaveli St, 16 м, Kyiv
+GET http://localhost:8080/api/restaurants/search?string=ata%20hata%20aveli

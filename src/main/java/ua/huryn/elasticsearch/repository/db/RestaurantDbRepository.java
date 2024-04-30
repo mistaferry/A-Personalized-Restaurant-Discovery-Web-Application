@@ -4,8 +4,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import ua.huryn.elasticsearch.entity.db.Dish;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
-import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 
 import java.util.List;
 
@@ -31,5 +31,6 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
     @Query("SELECT r FROM Restaurant r")
     List<Restaurant> getAll();
 
+//    void updateRestaurantByDishes(List<Dish> dishes);
 //    Object findByPlaceId(String placeId);
 }

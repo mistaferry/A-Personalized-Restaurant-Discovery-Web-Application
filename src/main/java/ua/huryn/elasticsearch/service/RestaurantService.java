@@ -3,13 +3,14 @@ package ua.huryn.elasticsearch.service;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.google.maps.errors.ApiException;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 
 public interface RestaurantService {
-    public RestaurantDTO findByRestaurantId(Long id);
+    RestaurantDTO findByRestaurantId(Long id);
 
     List<RestaurantDTO> findByName(String name);
 
@@ -30,9 +31,6 @@ public interface RestaurantService {
     List<RestaurantDTO> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantDTO> filtered);
 
     Image getRestaurantImage(RestaurantDTO RestaurantDTO);
-
-
-//    List<RestaurantDTO> findByCategory(Category category);
 
     List<String> getCuisineTypeFromJson();
 
