@@ -1,10 +1,5 @@
-GET http://localhost:8080/restaurants/all
+# search for Puzata Hata
+GET http://localhost:8080/api/restaurants/search?string=uzata%20hata
 
-###
-GET http://localhost:8080/api/v1/items/Smart
-
-###
-GET http://localhost:8080/api/v1/items/category/Electronics
-
-###
-GET http://localhost:8080/api/v1/items/prices/10/30
+# search for Puzata Hata, Shota Rustaveli St, 16 м, Kyiv
+GET http://localhost:8080/api/restaurants/search?string=ata%20hata%20aveli

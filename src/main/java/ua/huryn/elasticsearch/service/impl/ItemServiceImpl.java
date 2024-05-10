@@ -17,19 +17,4 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> findByName(String itemName) {
         return itemRepository.findByName(itemName);
     }
-
-    @Override
-    public List<Item> findByCategory(String category) {
-        return itemRepository.findByCategory(category);
-    }
-
-    @Override
-    public List<Item> findByPriceBetween(double low, double high) {
-        return itemRepository.findByPriceBetween(low, high);
-    }
-
-    @Override
-    public Iterable<Item> findAll() {
-        return itemRepository.findAll();
-    }
 }

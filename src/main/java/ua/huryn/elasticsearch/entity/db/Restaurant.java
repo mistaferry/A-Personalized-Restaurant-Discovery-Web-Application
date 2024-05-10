@@ -43,4 +43,10 @@ public class Restaurant {
             joinColumns = @JoinColumn(name = "restaurant_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     List<Category> categories;
+    @OneToMany
+    @JoinTable(
+            name = "restaurant_dish",
+            joinColumns = @JoinColumn(name = "restaurant_id"),
+            inverseJoinColumns = @JoinColumn(name = "dish_id"))
+    List<Dish> dishes;
 }

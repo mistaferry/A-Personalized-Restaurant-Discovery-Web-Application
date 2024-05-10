@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ua.huryn.elasticsearch.entity.model.Item;
+import ua.huryn.elasticsearch.repository.elasticsearch.ItemRepository;
+import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.service.ItemService;
 import lombok.RequiredArgsConstructor;
 
@@ -17,19 +19,8 @@ import lombok.RequiredArgsConstructor;
 public class ItemController {
     private final ItemService itemService;
 
-    @GetMapping("/{name}")
+    @GetMapping("{name}")
     public List<Item> getItemByName(@PathVariable("name") String name) {
         return itemService.findByName(name);
-    }
-
-    @GetMapping("/category/{category}")
-    public List<Item> getItemsByCategory(@PathVariable("category") String category) {
-        return itemService.findByCategory(category);
-    }
-
-    @GetMapping("/prices/{low}/{high}")
-    public List<Item> getItemsByPriceRange(@PathVariable("low") double low,
-            @PathVariable("high") double high) {
-        return itemService.findByPriceBetween(low, high);
     }
 }

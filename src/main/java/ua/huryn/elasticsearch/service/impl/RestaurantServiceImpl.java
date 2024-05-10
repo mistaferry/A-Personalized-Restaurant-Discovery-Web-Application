@@ -7,19 +7,27 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
 import com.google.maps.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
+import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.Category;
+import ua.huryn.elasticsearch.entity.db.Dish;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
-import ua.huryn.elasticsearch.entity.model.CategoryModel;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
-import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.repository.db.CategoryDbRepository;
+import ua.huryn.elasticsearch.repository.db.DishDbRepository;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
-import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
@@ -33,22 +41,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class RestaurantServiceImpl implements RestaurantService {
-    private final RestaurantRepository restaurantRepository;
     private final RestaurantDbRepository restaurantDbRepository;
+    private final DishDbRepository dishDbRepository;
     private final CategoryDbRepository categoryDbRepository;
     private final GeneralProperties generalProperties;
+    private final ElasticsearchOperations elasticsearchOperations;
     private final String localDirectory;
 
-    public RestaurantServiceImpl(RestaurantRepository restaurantRepository, RestaurantDbRepository restaurantDbRepository, CategoryDbRepository categoryDbRepository, GeneralProperties generalProperties) {
-        this.restaurantRepository = restaurantRepository;
+    public RestaurantServiceImpl(RestaurantDbRepository restaurantDbRepository, DishDbRepository dishDbRepository, CategoryDbRepository categoryDbRepository, GeneralProperties generalProperties, ElasticsearchOperations elasticsearchOperations) {
+        this.dishDbRepository = dishDbRepository;
         this.restaurantDbRepository = restaurantDbRepository;
         this.categoryDbRepository = categoryDbRepository;
         this.generalProperties = generalProperties;
         localDirectory=generalProperties.getLocalDirectory();
+        this.elasticsearchOperations = elasticsearchOperations;
     }
 
     @Override
@@ -144,17 +155,15 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String firstPoint) {
+    public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, String routeDeparturePoint, String fullTextSearch) {
         List<RestaurantDTO> filteredData = Convertor.convertEntityListToDTO(restaurantDbRepository.getAll());
 
+        filteredData = getRestaurantsDTOBySearchString(fullTextSearch, filteredData);
         filteredData = filteredByRating(rating, filteredData);
         filteredData = filteredByPriceLevel(price, filteredData);
         filteredData = filteredByCuisineType(cuisineTypes, filteredData);
-        filteredData = getRestaurantInGivenDistance(firstPoint, routes, filteredData);
+        filteredData = getRestaurantInGivenDistance(routeDeparturePoint, routes, filteredData);
 
-//        if(cuisineTypes.isEmpty() && rating.isEmpty() && price.isEmpty() && filteredData.isEmpty()){
-//            filteredData = restaurantDbRepository.findAll();
-//        }
         log.debug("cuisineTypes - {}", cuisineTypes);
         log.debug("rating - {}", rating);
         log.debug("price - {}", price);
@@ -245,10 +254,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         );
         Matcher matcher = GEO_COORDINATE_PATTERN.matcher(text);
         return matcher.matches();
-    }
-
-    private boolean isAddress(String text) {
-        return !isGeographicCoordinates(text);
     }
 
     private List<RestaurantDTO> filteredByCuisineType(List<String> cuisineTypes, List<RestaurantDTO> filteredData){
@@ -359,11 +364,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         int countOfSavedRestaurants = 0;
         for (PlacesSearchResult result : arrayOfResults) {
             log.debug("one result from search - {}", result);
-//            Object existsObject = restaurantRepository.findByPlaceId(result.placeId);
-            Object existsObject = restaurantDbRepository.findByPlaceId(result.placeId);
+            Restaurant existsObject = restaurantDbRepository.findByPlaceId(result.placeId);
             if (existsObject == null) {
                 log.debug("The restaurant wasn't find. Let's add it");
-                Restaurant restaurant = getItem(result, context, cuisine);
+                Restaurant restaurant = getRestaurantData(result, context, cuisine);
                 log.debug("Add restaurant: {}", restaurant);
                 restaurantDbRepository.save(restaurant);
                 countOfSavedRestaurants++;
@@ -383,7 +387,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<LatLng> locationsList = new ArrayList<>();
         String path = localDirectory + "/db_data/locations.json";
         try {
-            String content = "";
+            String content;
             content = new String(Files.readAllBytes(Paths.get(path)));
             JSONArray jsonArray = new JSONArray(content);
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -399,7 +403,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return locationsList;
     }
 
-    private Restaurant getItem(PlacesSearchResult restaurantResult, GeoApiContext context, String cuisine){
+    private Restaurant getRestaurantData(PlacesSearchResult restaurantResult, GeoApiContext context, String cuisine){
         Restaurant restaurant = new Restaurant();
         restaurant.setPlaceId(restaurantResult.placeId);
         restaurant.setName(restaurantResult.name);
@@ -414,11 +418,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         }else{
             restaurant.setPhotoRef(null);
         }
-        List<Category> categoriesList = getCategories(restaurantResult);
-
-        setItemDetails(restaurantResult, restaurant, context);
-
-        restaurant.setCategories(categoriesList);
+        setPriceLevelAndWebsite(restaurantResult, restaurant, context);
+        restaurant.setCategories(getCategories(restaurantResult));
+        restaurant.setDishes(getDishes(cuisine));
         return restaurant;
     }
 
@@ -472,7 +474,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private static void setItemDetails(PlacesSearchResult restaurantResult, Restaurant restaurant, GeoApiContext context) {
+    private static void setPriceLevelAndWebsite(PlacesSearchResult restaurantResult, Restaurant restaurant, GeoApiContext context) {
         try {
             PlaceDetails details = PlacesApi.placeDetails(context, restaurantResult.placeId).await();
             PriceLevel priceLev = details.priceLevel;
@@ -495,8 +497,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<Category> categoriesList = new ArrayList<>();
         String[] types = restaurantResult.types;
 
-        for (int j = 0; j < types.length; j++) {
-            String typeName = types[j];
+        for (String typeName : types) {
             Object existingCategory = categoryDbRepository.findByName(typeName);
 
             if (existingCategory != null) {
@@ -510,6 +511,11 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
         }
         return categoriesList;
+    }
+
+
+    private List<Dish> getDishes(String cuisineType){
+        return dishDbRepository.findByCuisineType(cuisineType);
     }
 
     @Override
@@ -537,7 +543,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         try {
             List<Restaurant> restaurants = objectMapper.readValue(new File(localDirectory, "db_data/restaurants.json"),
-                    new TypeReference<List<Restaurant>>() {});
+                    new TypeReference<>() {
+                    });
 
             for (Restaurant restaurant : restaurants) {
                 log.info("restaurant: {}", restaurant);
@@ -558,35 +565,46 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-//    @Override
-//    public List<RestaurantDTO> searchElasticByNameAndAddress(String keywords) {
-//        List<RestaurantModel> restaurantsByKeyword = restaurantRepository.findBySearchField(keywords);
-//        List<Restaurant> restaurantsFromDb = new ArrayList<>();
-//        for (RestaurantModel restaurantModel: restaurantsByKeyword){
-//            Restaurant restaurant = restaurantDbRepository.findById(restaurantModel.getRestaurantId());
-//            restaurantsFromDb.add(restaurant);
-//        }
-//        return Convertor.convertEntityListToDTO(restaurantsFromDb);
-//    }
+    @Override
+    public List<RestaurantModel> findRestaurantsBySearchString(List<String> parts) {
+        try {
 
-    private RestaurantModel restaurantEntityIntoModel(Restaurant restaurant){
-        RestaurantModel restaurantModel = restaurantRepository.findByRestaurantId(restaurant.getId());
-        restaurantModel.setCategories(getCategoryModelList(restaurant.getCategories()));
-        return restaurantModel;
-    }
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            for (String part : parts) {
+                boolQuery.must(QueryBuilders.wildcardQuery("search_string", "*" + part + "*"));
+            }
 
-    private List<CategoryModel> getCategoryModelList(List<Category> categories){
-        List<CategoryModel> categoryModels = new ArrayList<>();
-        for (Category category: categories){
-            categoryModels.add(categoryEntityIntoModel(category));
+            String queryString = boolQuery.toString();
+            StringQuery stringQuery = new StringQuery(queryString);
+
+            SearchHits<RestaurantModel> searchHits = elasticsearchOperations.search(
+                    stringQuery, RestaurantModel.class);
+
+            return searchHits.stream()
+                    .map(SearchHit::getContent)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error during search: " + e.getMessage());
         }
-        return categoryModels;
+        return null;
     }
 
-    private CategoryModel categoryEntityIntoModel(Category category){
-        return new CategoryModel()
-                .setCategory_id(category.getId())
-                .setName(category.getName());
-    }
+    @Override
+    public List<RestaurantDTO> getRestaurantsDTOBySearchString(String searchString, List<RestaurantDTO> restaurantList){
+        if(searchString != null && !searchString.isBlank()){
+            searchString = searchString.toLowerCase();
+            String[] words = searchString.split("\\s+");
+            List<String> wordList = Arrays.asList(words);
 
+            List<RestaurantModel> list = findRestaurantsBySearchString(wordList);
+            List<Restaurant> entityList = new ArrayList<>();
+            for (RestaurantModel restaurantModel : list) {
+                entityList.add(restaurantDbRepository.findById(restaurantModel.getRestaurantId()));
+            }
+            System.out.println("parts - " + searchString);
+            System.out.println("size - " + entityList.size());
+            return Convertor.convertEntityListToDTO(entityList);
+        }
+        return restaurantList;
+    }
 }

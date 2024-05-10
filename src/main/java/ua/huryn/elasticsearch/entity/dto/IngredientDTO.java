@@ -4,15 +4,11 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Builder
 @Data
-public class DishDTO implements Serializable {
+public class IngredientDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private Long dishId;
+    private Long ingredientId;
     private String name;
-    private Double price;
-    private DishTypeDTO dishType;
-    private List<IngredientDTO> ingredients;
 }

@@ -104,3 +104,18 @@
     font-weight: bold;
     font-size: smaller;
 }
+
+.checkbox-table {
+
+    display: flex;
+    flex-direction: row;
+}
+
+.checkbox-cell {
+    width: 33%;
+    align-content: center;
+}
+
+/*.checkbox-cell {*/
+/*    padding: 10px; !* Add padding around each checkbox for spacing *!*/
+/*}*/
