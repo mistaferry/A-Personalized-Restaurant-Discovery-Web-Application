@@ -11,6 +11,7 @@ import lombok.Setter;
 public class DishType {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "type_id")
     private Integer id;
 
     @Column(name = "name")

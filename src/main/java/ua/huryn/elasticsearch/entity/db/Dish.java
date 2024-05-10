@@ -3,11 +3,16 @@ package ua.huryn.elasticsearch.entity.db;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
+@ToString
 @Entity
 @Table(name="dish")
 public class Dish {
@@ -20,14 +25,14 @@ public class Dish {
     @Column(name = "price")
     private Double price;
     @ManyToOne
-    @JoinColumn(name = "dish_type", referencedColumnName = "id")
+    @JoinColumn(name = "dish_type", referencedColumnName = "type_id")
     private DishType dishType;
     @Column(name = "cuisine_type")
     private String cuisineType;
-    @OneToMany
-    @JoinTable(
-            name = "dish_ingredient",
+
+    @ManyToMany
+    @JoinTable(name = "dish_ingredient",
             joinColumns = @JoinColumn(name = "dish_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
-    List<Ingredient> ingredients;
+    private List<Ingredient> ingredients;
 }

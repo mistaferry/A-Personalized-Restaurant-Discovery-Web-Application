@@ -14,5 +14,6 @@ public class DishDTO implements Serializable {
     private String name;
     private Double price;
     private DishTypeDTO dishType;
+    private String cuisineType;
     private List<IngredientDTO> ingredients;
 }
