@@ -27,7 +27,7 @@
 }
 
 .menu-div{
-    /*width: 75%;*/
+    width: 100%;
     /*width: auto;*/
     display: inline-block;
 }
@@ -35,7 +35,7 @@
 .filters{
     width: 20%;
     /*margin: 1px;*/
-    /*padding: 2px;*/
+    padding-left: 1%;
     display: inline-block
 }
 
@@ -50,10 +50,10 @@
 .two-column-checkgroup {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px; /* розрив між стовпцями */
+    gap: 10px;
 }
 
-.item_div{
+.item-div{
     width: 300px;
     height: 250px;
     display: inline-block;
@@ -67,8 +67,6 @@
 }
 
 .info {
-    /*border: 1px solid #000;*/
-    /*background-color: #06b535;*/
     padding: 10px;
     box-sizing: border-box;
     display: flex;
@@ -91,14 +89,6 @@
     gap: 20px;
 }
 
-.category-container{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    border-bottom: #1d1d2b;
-    border-top: #000000;
-}
-
 .cuisine-type{
     color: #0074D9;
     font-weight: bold;
@@ -116,6 +106,65 @@
     align-content: center;
 }
 
-/*.checkbox-cell {*/
-/*    padding: 10px; !* Add padding around each checkbox for spacing *!*/
-/*}*/
+.custom-checkbox{
+    --vaadin-checkbox-checkmark-char: --lumo-icons-cross;
+}
+
+.restaurant-page-info-div{
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    width: 60%;
+    margin: 3%;
+}
+
+.imageDiv{
+    width: 100%;
+    display: inline-block;
+}
+
+.curr-restaurant-info-div{
+    width: 40%;
+    display: inline-block;
+    margin: 3%;
+}
+
+.restaurant-info-div{
+    display: inline-block;
+    justify-content: center;
+    padding: 3%;
+}
+
+.restaurant-info-div *{
+    padding-bottom: 10px;
+}
+
+.restaurant-data{
+    width: 80%;
+}
+
+.pagination-controls{
+    display: flex;
+    justify-content: center;
+}
+
+.pagination-controls*{
+    margin: 3%;
+}
+
+.fit-c{
+    width: 100%;
+    height: auto;
+}
+
+.review-div{
+    width: 48%;
+    height: 200px;
+    margin: 3%;
+    /*background: #2b908f;*/
+}
+
+.login-button{
+    display: flex;
+    align-self: end;
+}

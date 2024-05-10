@@ -1,9 +1,7 @@
 package ua.huryn.elasticsearch.utils;
 
-import ua.huryn.elasticsearch.entity.db.Category;
-import ua.huryn.elasticsearch.entity.db.Restaurant;
-import ua.huryn.elasticsearch.entity.dto.CategoryDTO;
-import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.entity.db.*;
+import ua.huryn.elasticsearch.entity.dto.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +26,13 @@ public final class Convertor {
         return restaurant;
     }
 
+    public static Category convertToEntity(CategoryDTO categoryDTO) {
+        Category category = new Category();
+        category.setId(categoryDTO.getCategoryId());
+        category.setName(categoryDTO.getName());
+        return category;
+    }
+
     public static RestaurantDTO convertToDTO(Restaurant restaurant) {
         return RestaurantDTO.builder()
                 .restaurantId(restaurant.getId())
@@ -44,13 +49,6 @@ public final class Convertor {
                 .build();
     }
 
-    public static Category convertToEntity(CategoryDTO categoryDTO) {
-        Category category = new Category();
-        category.setId(categoryDTO.getCategoryId());
-        category.setName(categoryDTO.getName());
-        return category;
-    }
-
     public static CategoryDTO convertToDTO(Category category) {
         return CategoryDTO.builder()
                 .categoryId(category.getId())
@@ -58,12 +56,78 @@ public final class Convertor {
                 .build();
     }
 
-    public static List<RestaurantDTO> convertEntityListToDTO(List<Restaurant> restaurants){
+    public static DishTypeDTO convertToDTO(DishType dishType) {
+        return DishTypeDTO.builder()
+                .dishTypeId(Long.valueOf(dishType.getId()))
+                .name(dishType.getName())
+                .build();
+    }
+
+    public static UserDTO convertToDTO(User user) {
+        return UserDTO.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .build();
+    }
+
+    public static DishDTO convertToDTO(Dish dish) {
+        return DishDTO.builder()
+                .dishId(dish.getId())
+                .name(dish.getName())
+                .price(dish.getPrice())
+                .dishType(convertToDTO(dish.getDishType()))
+                .cuisineType(dish.getCuisineType())
+                .build();
+    }
+
+    public static ReviewDTO convertToDTO(Review review) {
+        return ReviewDTO.builder()
+                .reviewId(review.getId())
+                .text(review.getText())
+                .time(review.getTime())
+                .restaurantDTO(convertToDTO(review.getRestaurant()))
+                .userDTO(convertToDTO(review.getUser()))
+                .build();
+    }
+
+    public static IngredientDTO convertToDTO(Ingredient ingredient) {
+        return IngredientDTO.builder()
+                .ingredientId(ingredient.getId())
+                .name(ingredient.getName())
+                .build();
+    }
+
+    public static List<ReviewDTO> convertReviewEntityListToDTO(List<Review> reviews){
+        List<ReviewDTO> reviewDTOS = new ArrayList<>();
+        for (Review review: reviews){
+            reviewDTOS.add(convertToDTO(review));
+        }
+        return reviewDTOS;
+    }
+
+    public static List<RestaurantDTO> convertRestaurantEntityListToDTO(List<Restaurant> restaurants){
         List<RestaurantDTO> restaurantDTOS = new ArrayList<>();
         for (Restaurant restaurant: restaurants){
             restaurantDTOS.add(convertToDTO(restaurant));
         }
         return restaurantDTOS;
+    }
+
+    public static List<DishDTO> convertDishEntityListToDTO(List<Dish> dishes){
+        List<DishDTO> dishDTO = new ArrayList<>();
+        for (Dish dish: dishes){
+            dishDTO.add(convertToDTO(dish));
+        }
+        return dishDTO;
+    }
+
+    public static List<IngredientDTO> convertIngredientEntityListToDTO(List<Ingredient> ingredients){
+        List<IngredientDTO> dishDTO = new ArrayList<>();
+        for (Ingredient ingredient: ingredients){
+            dishDTO.add(convertToDTO(ingredient));
+        }
+        return dishDTO;
     }
 }
 
