@@ -11,6 +11,7 @@ import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.*;
+import jakarta.annotation.security.PermitAll;
 import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.db.Review;
@@ -29,8 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route(value = "restaurant", layout = MainView.class)
-//@Route(value = "restaurant")
-
 public class RestaurantView extends Div implements HasUrlParameter<Long> {
     private Long restaurantId;
     private RestaurantDTO restaurant;

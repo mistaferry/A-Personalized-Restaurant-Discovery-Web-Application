@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.*;
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
@@ -30,8 +31,7 @@ import static ua.huryn.elasticsearch.utils.QueryParameter.getStringSetFromQueryP
 
 @PageTitle("Menu")
 @Route(value = "", layout = MainView.class)
-//@Route(value = "")
-
+@PermitAll
 @CssImport("styles.css")
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
 public class Menu extends VerticalLayout implements BeforeEnterObserver {
