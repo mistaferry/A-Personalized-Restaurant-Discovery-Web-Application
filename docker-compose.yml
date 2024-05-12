@@ -26,7 +26,7 @@ services:
       - odfe-net
   odfe-node:
     image: elasticsearch:8.8.1
-#    image: elasticsearch:7.10.1
+    #    image: elasticsearch:7.10.1
     restart: always
     logging:
       driver: "json-file"

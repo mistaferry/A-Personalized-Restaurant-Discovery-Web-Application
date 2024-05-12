@@ -166,6 +166,7 @@ public class RestaurantView extends Div implements HasUrlParameter<Long> {
 //        textArea.setLabel("Новий відгук");
 //        Div addReviewButton = new Div(new Button("Додати"));
         MessageInput input = new MessageInput();
+
         input.addSubmitListener(submitEvent -> {
             MessageListItem newMessage = new MessageListItem(
                     submitEvent.getValue(), Instant.now(), "Milla Sting");

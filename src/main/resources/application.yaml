@@ -22,7 +22,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
 
 spring.security.oauth2.client:
   registration:
@@ -53,5 +53,5 @@ google:
   api-key: ${API_KEY}
 app:
   local-directory: local-resource
-  cuisine-types: ukrainian,american,italian,french,german,asian,greek,mexican,vegan
+  cuisine-types: Українська,Американська,Італійська,Французька,Німецька,Азійська,Грецька,Мексиканська,Веганська
 

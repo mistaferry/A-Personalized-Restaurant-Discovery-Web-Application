@@ -11,21 +11,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.SearchHit;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
+import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.*;
 import ua.huryn.elasticsearch.entity.dto.DishDTO;
 import ua.huryn.elasticsearch.entity.dto.IngredientDTO;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
-import ua.huryn.elasticsearch.config.BootstrapProperties;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.repository.db.*;
 import ua.huryn.elasticsearch.service.RestaurantService;
@@ -37,7 +36,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantDbRepository restaurantDbRepository;
     private final DishDbRepository dishDbRepository;
@@ -54,9 +53,22 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final IngredientDbRepository ingredientDbRepository;
     private final UserDbRepository userDbRepository;
     private final ReviewDbRepository reviewDbRepository;
-    private final BootstrapProperties bootstrapProperties;
-    @Autowired
-    private ElasticsearchOperations elasticsearchOperations;
+    private final GeneralProperties generalProperties;
+    private final ElasticsearchOperations elasticsearchOperations;
+    private final String localDirectory;
+
+    public RestaurantServiceImpl(RestaurantDbRepository restaurantDbRepository, DishDbRepository dishDbRepository, CategoryDbRepository categoryDbRepository, RestaurantInfoEnDbRepository restaurantInfoEnDbRepository, IngredientDbRepository ingredientDbRepository, UserDbRepository userDbRepository, ReviewDbRepository reviewDbRepository, GeneralProperties generalProperties, ElasticsearchOperations elasticsearchOperations) {
+        this.dishDbRepository = dishDbRepository;
+        this.restaurantDbRepository = restaurantDbRepository;
+        this.categoryDbRepository = categoryDbRepository;
+        this.restaurantInfoEnDbRepository = restaurantInfoEnDbRepository;
+        this.ingredientDbRepository = ingredientDbRepository;
+        this.userDbRepository = userDbRepository;
+        this.reviewDbRepository = reviewDbRepository;
+        this.generalProperties = generalProperties;
+        localDirectory=generalProperties.getLocalDirectory();
+        this.elasticsearchOperations = elasticsearchOperations;
+    }
 
     @Override
     public List<RestaurantDTO> findByRating(double rating) {
@@ -148,22 +160,21 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantDTO> getAll() {
-        return Convertor.convertRestaurantEntityListToDTO(restaurantDbRepository.getAll());
-    }
-
-    public List<Ingredient> getAllIngredientsByRestaurantId(Long id){
-        Restaurant restaurant = restaurantDbRepository.findById(id);
-        List<Dish> dishes = restaurant.getDishes();
-        List<Ingredient> ingredients = new ArrayList<>();
-        for (Dish dish: dishes){
-            ingredients.addAll(dish.getIngredients());
+        List<Restaurant> restaurants = restaurantDbRepository.getAll();
+        for (Restaurant restaurant: restaurants) {
+            List<Dish> dishes = dishDbRepository.findByRestaurantId(restaurant.getId());
+            for (Dish dish: dishes){
+                List<Ingredient> ingredients = ingredientDbRepository.findIngredientsByDishId(dish.getId()).orElse(null);
+                dish.setIngredients(ingredients);
+            }
+            restaurant.setDishes(dishes);
         }
-        return ingredients;
+        return Convertor.convertRestaurantEntityListToDTO(restaurants);
     }
 
-    private /*static*/ GeoApiContext getGeoApiContext() throws IOException {
+    private GeoApiContext getGeoApiContext() throws IOException {
         return new GeoApiContext.Builder()
-                .apiKey(bootstrapProperties.getApiKey())
+                .apiKey(generalProperties.getGoogleApiKey())
                 .build();
     }
 
@@ -361,27 +372,27 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void addDataToDb() throws IOException, InterruptedException, ApiException {
         List<LatLng> locationsList = getLocationFromJson();
-        List<String> cuisineList = getCuisineTypeFromJson();
-        cuisineList = cuisineList.subList(1,2);
+        List<String> cuisineList = getCuisineType();
         GeoApiContext context = getGeoApiContext();
 
         log.info("Received information about {} cuisines and {} locations", cuisineList.size(), locationsList.size());
 
         for (String cuisine: cuisineList){
             for (LatLng loc: locationsList){
+                log.info("Get restaurants for location: {}", loc);
                 PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
                         .radius(3500)
                         .type(PlaceType.RESTAURANT)
                         .keyword(cuisine)
-                        .language("ua")
+                        .language("uk")
                         .await();
 
                 PlacesSearchResult[] placesSearchResults = response.results;
                 saveDataFromResponseToDb(placesSearchResults, context, cuisine);
-//                getRestaurantsDataFromResponseWithNextPageToken(loc, response, context, cuisine);
+                getRestaurantsDataFromResponseWithNextPageToken(loc, response, context, cuisine);
             }
         }
-//        getRestaurantsNearby(locationsList, context);
+        getRestaurantsNearby(locationsList, context);
     }
 
     private void getRestaurantsNearby(List<LatLng> locationsList, GeoApiContext context) throws ApiException, InterruptedException, IOException {
@@ -389,7 +400,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
                     .radius(3500)
                     .type(PlaceType.RESTAURANT)
-                    .language("ua")
+                    .language("uk")
                     .await();
 
             PlacesSearchResult[] placesSearchResults = response.results;
@@ -405,7 +416,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 response = PlacesApi.nearbySearchQuery(context, loc)
                         .radius(1500)
                         .type(PlaceType.RESTAURANT)
-                        .language("ua")
+                        .language("uk")
                         .pageToken(nextPageToken)
                         .await();
                 saveDataFromResponseToDb(response.results, context, cuisine);
@@ -439,29 +450,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    public List<String> getCuisineTypeFromJson() {
-        List<String> cuisineTypeList = new ArrayList<>();
-        String path = "src/main/resources/db_data/cuisine_types.json";
-        try {
-            String content = "";
-            content = new String(Files.readAllBytes(Paths.get(path)));
-            JSONArray jsonArray = new JSONArray(content);
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
-            JSONArray cuisineTypesArray = jsonObject.getJSONArray("cuisine_types");
-            for (int i = 0; i < cuisineTypesArray.length(); i++) {
-                cuisineTypeList.add(cuisineTypesArray.getString(i));
-            }
-        }catch (IOException e){
-            System.err.println("No access to file: " + path);
-        }
-        return cuisineTypeList;
+    public List<String> getCuisineType() {
+        return Arrays.asList(generalProperties.getCuisineTypes());
     }
 
     private List<LatLng> getLocationFromJson() {
         List<LatLng> locationsList = new ArrayList<>();
-        String path = "src/main/resources/db_data/locations.json";
+        String path = localDirectory + "/db_data/locations.json";
         try {
-            String content = "";
+            String content;
             content = new String(Files.readAllBytes(Paths.get(path)));
             JSONArray jsonArray = new JSONArray(content);
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -515,7 +512,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private String setRestaurantImagePath(GeoApiContext context, Restaurant restaurant, PlacesSearchResult restaurantResult){
         try {
             Photo[] photos = restaurantResult.photos;
-            ImageResult photo = null;
+            ImageResult photo;
             photo = new PhotoRequest(context)
                     .photoReference(photos[0].photoReference)
                     .maxWidth(photos[0].width)
@@ -523,20 +520,22 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .await();
             byte[] imageData = photo.imageData;
 
-            String parentDirectory = "src/main/resources/";
-            String outputDirPath = parentDirectory + "db_data/restaurant_images";
+            String outputDirPath = localDirectory + "/db_data/restaurant_images";
             File outputDir = new File(outputDirPath);
 
             if (!outputDir.exists()) {
                 outputDir.mkdirs();
             }
-
-            String imagePath = "db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
-            String path = parentDirectory + imagePath;
+            String imagePath = "/db_data/restaurant_images/" + restaurantResult.placeId + "_image.jpg";
+            String path = localDirectory + imagePath;
+            // create path if it doesn't exist
+            Files.createDirectories(Paths.get(path).toAbsolutePath().getParent());
+            // Write the byte array to the file
             try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(imageData);
+                log.debug("Image saved to: {}", path);
             } catch (IOException e) {
-                log.error("Cannot save image for placeId - " + restaurant.getPlaceId());
+                log.error("Error saving image: {}", e.getMessage());
             }
 
             return imagePath;
@@ -559,36 +558,39 @@ public class RestaurantServiceImpl implements RestaurantService {
                 restaurant.setWebsite(website);
             }
 
-
-            RestaurantInfoEn restaurantInfoEn = new RestaurantInfoEn();
-            restaurantInfoEn.setRestaurantId(restaurant.getId());
-            restaurantInfoEn.setNameEn(details.name);
-            restaurantInfoEn.setAddressEn(details.vicinity);
-            restaurantInfoEnDbRepository.save(restaurantInfoEn);
-
         } catch (Exception e) {
             log.error("Unable to retrieve restaurant data from placeId: " + restaurantResult.placeId);
         }
     }
 
     private void saveRestaurantReviews(Restaurant restaurant, String placeId, GeoApiContext context){
-        PlaceDetails details = null;
         try {
-            details = PlacesApi.placeDetails(context, placeId).language("en").await();
-            PlaceDetails.Review[] placeReviews =  details.reviews;
-            if(placeReviews != null){
-                for(PlaceDetails.Review review: placeReviews){
-                    Review placeReview = new Review();
-                    User user = (userDbRepository.findById(1L)).get();
-                    placeReview.setText(review.text);
-                    placeReview.setTime(Timestamp.from(review.time));
-                    placeReview.setUser(user);
-                    placeReview.setRestaurant(restaurant);
-                    reviewDbRepository.save(placeReview);
+            PlaceDetails details = PlacesApi.placeDetails(context, restaurant.getPlaceId()).language("en").await();
+            if(details != null){
+                PlaceDetails.Review[] placeReviews = details.reviews;
+                if (placeReviews != null) {
+                    for (PlaceDetails.Review review : placeReviews) {
+                        Review placeReview = new Review();
+                        User user = userDbRepository.findById(1L).orElse(null);
+                        String text = review.text;
+                        String truncatedText = text.substring(0, Math.min(text.length(), 255));
+                        placeReview.setText(truncatedText);
+                        log.info(truncatedText);
+                        placeReview.setTime(Timestamp.from(review.time));
+                        placeReview.setUser(user);
+                        placeReview.setRestaurant(restaurant);
+                        reviewDbRepository.save(placeReview);
+                    }
                 }
+
+                RestaurantInfoEn restaurantInfoEn = new RestaurantInfoEn();
+                restaurantInfoEn.setRestaurantId(restaurant.getId());
+                restaurantInfoEn.setNameEn(details.name);
+                restaurantInfoEn.setAddressEn(details.vicinity);
+                restaurantInfoEnDbRepository.save(restaurantInfoEn);
             }
-        } catch (ApiException | InterruptedException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.error("Unable to retrieve restaurant data from placeId: " + restaurant.getPlaceId());
         }
     }
 
@@ -622,11 +624,13 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void addApiDataToFile(){
         try {
-            List<Restaurant> restaurants = restaurantDbRepository.findAll();
+            List<RestaurantDTO> restaurants = getAll();
 
             ObjectMapper mapper = new ObjectMapper();
 
-            File file = new File("src/main/resources/db_data/restaurants.json");
+            Files.createDirectories(Paths.get(localDirectory,"db_data"));
+
+            File file = new File(localDirectory, "db_data/restaurants.json");
 
             mapper.writeValue(file, restaurants);
         } catch (Exception e) {
@@ -639,8 +643,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            List<Restaurant> restaurants = objectMapper.readValue(new File("src/main/resources/db_data/restaurants.json"),
-                    new TypeReference<List<Restaurant>>() {});
+            List<Restaurant> restaurants = objectMapper.readValue(new File(localDirectory, "db_data/restaurants.json"),
+                    new TypeReference<>() {
+                    });
 
             for (Restaurant restaurant : restaurants) {
                 log.info("restaurant: {}", restaurant);
@@ -660,6 +665,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             log.error("There was a problem getting data from file: {}", e.getMessage());
         }
     }
+
 
     @Override
     public List<RestaurantModel> findRestaurantsBySearchString(List<String> parts) {
