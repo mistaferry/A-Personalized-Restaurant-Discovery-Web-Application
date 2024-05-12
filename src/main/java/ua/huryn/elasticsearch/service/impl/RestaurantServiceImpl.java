@@ -225,7 +225,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch) {
-        List<RestaurantDTO> filteredData = Convertor.convertRestaurantEntityListToDTO(restaurantDbRepository.getAll());
+        List<RestaurantDTO> filteredData = getAll();
 
         filteredData = getRestaurantsDTOBySearchString(fullTextSearch, filteredData);
         filteredData = filteredByCuisineType(cuisineTypes, filteredData);

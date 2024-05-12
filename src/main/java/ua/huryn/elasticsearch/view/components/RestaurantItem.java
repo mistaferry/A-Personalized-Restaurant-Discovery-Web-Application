@@ -7,31 +7,53 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.StreamResource;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.catalina.webresources.FileResource;
+import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.view.RestaurantView;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RestaurantItem {
+import static org.reflections.Reflections.log;
 
-    public static Div create(RestaurantDTO restaurant) {
+@Getter
+@Setter
+public class RestaurantItem {
+    private final String localDirectory;
+    private final GeneralProperties generalProperties;
+
+    public RestaurantItem(GeneralProperties generalProperties) {
+        this.generalProperties = generalProperties;
+        this.localDirectory=generalProperties.getLocalDirectory();
+    }
+
+
+    public Div create(RestaurantDTO restaurant) {
         Div div = new Div();
         div.addClassNames("item-div");
 
         Div imageContainer = new Div();
         imageContainer.addClassNames("d-flex justify-content-center");
 
-//        String scr = restaurant.getPhotoRef();
-//        if(scr == null){
-//            scr = "src/main/resources/db_data/restaurant_images/stock.jpg";
-//        }
-//        final String path = scr;
-//        StreamResource imageResource = new StreamResource(restaurant.getName().toLowerCase() + "_image.jpg",
-//                () -> getClass().getResourceAsStream(path));
+        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
 
-        Image image = new Image();
-        image.setSrc("https://pianavyshnia.com/wp-content/uploads/2022/10/logo.png");
+        StreamResource resource = new StreamResource("image.jpg", () -> {
+            try {
+                return new FileInputStream(scr);
+            } catch (FileNotFoundException e) {
+                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+            }
+            return null;
+        });
+        Image image = new Image(resource, "Image");
+
+//        image.setSrc(scr);
         image.addClassNames("image");
         imageContainer.add(image);
 
@@ -53,7 +75,7 @@ public class RestaurantItem {
         Span cuisineType = null;
         if (!cuisine.isBlank()) {
             cuisine = cuisine.substring(0, 1).toUpperCase() + cuisine.substring(1);
-            cuisineType = new Span(cuisine + " cuisine");
+            cuisineType = new Span(cuisine + " кухня");
         } else {
             cuisineType = new Span("");
         }
