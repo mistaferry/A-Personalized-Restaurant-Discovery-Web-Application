@@ -39,3 +39,5 @@ docker/logstash/data/
 src/main/resources/db_data
 frontend/
 src/main/bundles
+local-resource/db_data/restaurant_images
+local-resource/restaurants.json

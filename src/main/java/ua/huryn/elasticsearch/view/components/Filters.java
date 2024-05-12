@@ -74,7 +74,7 @@ public class Filters {
     }
 
     private Div createCuisineFilter() {
-        List<String> cuisineTypes = restaurantService.getCuisineTypeFromJson();
+        List<String> cuisineTypes = restaurantService.getCuisineType();
         List<String> cuisineTypesLabels = cuisineTypes.stream()
                 .map(cuisine -> cuisine + " кухня")
                 .toList();

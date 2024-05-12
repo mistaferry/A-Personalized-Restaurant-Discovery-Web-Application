@@ -32,7 +32,7 @@ public interface RestaurantService {
 
     Image getRestaurantImage(RestaurantDTO RestaurantDTO);
 
-    List<String> getCuisineTypeFromJson();
+    List<String> getCuisineType();
 
     List<RestaurantModel> findRestaurantsBySearchString(List<String> parts);
 

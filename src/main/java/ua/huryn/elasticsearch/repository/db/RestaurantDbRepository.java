@@ -12,7 +12,6 @@ import java.util.List;
 @Repository
 public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer> {
     Restaurant findById(Long id);
-
     List<Restaurant> findByName(String name);
 
     Restaurant findByPlaceId(String placeId);
