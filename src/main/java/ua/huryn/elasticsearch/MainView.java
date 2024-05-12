@@ -12,7 +12,7 @@ public class MainView extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("Diplom Huryn");
+        H1 logo = new H1("Diploma Huryn");
         var header = new HorizontalLayout(new DrawerToggle(), logo);
         addToNavbar(header);
 

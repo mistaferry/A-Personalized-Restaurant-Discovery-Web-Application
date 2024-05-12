@@ -25,15 +25,16 @@ spring:
       ddl-auto: update
 
 spring.security.oauth2.client:
-  registration:
-    google:
-      client-id: ${GOOGLE_CLIENT_ID}
-      client-secret: ${GOOGLE_CLIENT_SECRET}
-      scope:
-        - openid
-        - profile
-        - email
-      authorization-grant-type: authorization_code
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: http://localhost:${server.port}/login/oauth2/code/google
+          scope:
+            - openid
+            - profile
+            - email
+#          authorization-grant-type: authorization_code
 
 # Swagger
 springdoc:
