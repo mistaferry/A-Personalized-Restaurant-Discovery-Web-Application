@@ -1,6 +1,7 @@
 package ua.huryn.elasticsearch.view.components;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
@@ -29,8 +30,10 @@ public class Filters {
     private final CheckboxGroup<Integer> ratingCheckbox;
     private final CheckboxGroup<Integer> priceLevelCheckbox;
     private final CheckboxGroup<Integer> routeCheckbox;
-    private CheckboxGroup<String> dishesCheckbox;
+    private final CheckboxGroup<String> dishesCheckbox;
     private final CheckboxGroup<String> ingredientsCheckbox;
+    private final CheckboxGroup<String> partOfIngredientCheckbox;
+    private final CheckboxGroup<String> partOfDishCheckbox;
     private final ComboBox<String> dishComboBox;
     Set<String> selectedDishes = new HashSet<>();
     Set<String> selectedIngredients = new HashSet<>();
@@ -54,7 +57,8 @@ public class Filters {
         this.ingredientsCheckbox = new CheckboxGroup<>();
         this.dishComboBox =  new ComboBox<>();
         this.ingredientsComboBox =  new ComboBox<>();
-
+        this.partOfIngredientCheckbox = new CheckboxGroup<>();
+        this.partOfDishCheckbox = new CheckboxGroup<>();
 
         setupDishElementsListeners();
         setupIngredientElementsListeners();
@@ -169,7 +173,6 @@ public class Filters {
         routeCheckbox.setItemLabelGenerator(checkboxValues::get);
         routeCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
 
-
         checkboxContainer.add(routesDeparturePoint, routeCheckbox);
         routeDiv.add(checkboxContainer);
 
@@ -181,20 +184,31 @@ public class Filters {
         dishDiv.addClassNames("main-div");
 
         Div dishesContainer = new Div();
-        dishesContainer.addClassNames("d-flex flex-wrap justify-content-between");
+        dishesContainer.addClassNames("d-flex");
 
         Map<Long, String> allDishes = dishService.getAllDishesNames();
+        configureDishesCheckbox(allDishes);
+
+        List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(allDishes.values().toArray(new String[0]), 0, 4));
+        partOfDishCheckbox.setLabel("Страви");
+        partOfDishCheckbox.setItems(partOfValues);
+        partOfDishCheckbox.addClassName("flex-column");
+        dishesContainer.add(partOfDishCheckbox);
+        dishDiv.add(dishesContainer);
+
+        Dialog dialog = addDishesDialogElement();
+        Button button = new Button("Показати всі", e -> dialog.open());
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+
+        dishDiv.add(dialog, button);
+        return dishDiv;
+    }
+
+    private void configureDishesCheckbox(Map<Long, String> allDishes) {
         dishesCheckbox.setLabel("Страви");
         dishesCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
         dishesCheckbox.setItems(allDishes.values());
         dishComboBox.setItems(allDishes.values());
-
-
-        Dialog dialog = addDishesDialogElement();
-        Button button = new Button("Show all", e -> dialog.open());
-        dishDiv.add(dialog, button);
-
-        return dishDiv;
     }
 
     public Dialog addDishesDialogElement(){
@@ -205,7 +219,7 @@ public class Filters {
         dialogLayout.add(dishComboBox, dishesCheckbox);
         dialog.add(dialogLayout);
 
-        Button closeButton = new Button("Close", e -> dialog.close());
+        Button closeButton = new Button("Закрити", e -> dialog.close());
         dialog.getFooter().add(closeButton);
 
         return dialog;
@@ -218,6 +232,11 @@ public class Filters {
                 selectedDishes.add(selectedDish);
                 dishesCheckbox.setValue(selectedDishes);
             }
+        });
+
+        partOfDishCheckbox.addValueChangeListener(event -> {
+            Set<String> selected = partOfDishCheckbox.getSelectedItems();
+            dishesCheckbox.setValue(selected);
         });
 
         dishesCheckbox.addValueChangeListener(event -> {
@@ -239,16 +258,27 @@ public class Filters {
         ingredientsContainer.addClassNames("d-flex flex-wrap justify-content-between");
 
         Map<Long, String> checkboxValues = ingredientsService.getAllIngredients();
+        configureIngredientsCheckbox(checkboxValues);
+
+        List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(checkboxValues.values().toArray(new String[0]), 1, 4));
+        partOfIngredientCheckbox.setLabel("Інгредієнти");
+        partOfIngredientCheckbox.setItems(partOfValues);
+        ingredientsContainer.add(partOfIngredientCheckbox);
+        ingredientsDiv.add(ingredientsContainer);
+
+        Dialog dialog = addIngredientsDialogElement();
+        Button button = new Button("Показати всі", e -> dialog.open());
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        ingredientsDiv.add(dialog, button);
+
+        return ingredientsDiv;
+    }
+
+    private void configureIngredientsCheckbox(Map<Long, String> checkboxValues) {
         ingredientsCheckbox.setLabel("Інгредієнти");
         ingredientsCheckbox.addClassNames("custom-checkbox");
         ingredientsCheckbox.setItems(checkboxValues.values());
         ingredientsCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
-
-        Dialog dialog = addIngredientsDialogElement();
-        Button button = new Button("Show all", e -> dialog.open());
-        ingredientsDiv.add(dialog, button);
-
-        return ingredientsDiv;
     }
 
     public Dialog addIngredientsDialogElement(){
@@ -274,6 +304,11 @@ public class Filters {
                 selectedIngredients.add(selectedIngredient);
                 ingredientsCheckbox.setValue(selectedIngredients);
             }
+        });
+
+        partOfIngredientCheckbox.addValueChangeListener(event -> {
+            Set<String> selected = partOfIngredientCheckbox.getSelectedItems();
+            ingredientsCheckbox.setValue(selected);
         });
 
         ingredientsCheckbox.addValueChangeListener(event -> {

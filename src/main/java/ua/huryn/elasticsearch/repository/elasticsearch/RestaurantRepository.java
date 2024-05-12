@@ -9,5 +9,5 @@ import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 @Repository
 public interface RestaurantRepository extends ElasticsearchRepository<RestaurantModel, Long>{
 
-    List<RestaurantModel> findBySearchFieldContaining(String text);
+    List<RestaurantModel> findBySearchFieldUaContaining(String text);
 }

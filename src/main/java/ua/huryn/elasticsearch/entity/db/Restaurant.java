@@ -42,11 +42,13 @@ public class Restaurant {
             name = "restaurant_category",
             joinColumns = @JoinColumn(name = "restaurant_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @ToString.Exclude
     List<Category> categories;
     @OneToMany
     @JoinTable(
             name = "restaurant_dish",
             joinColumns = @JoinColumn(name = "restaurant_id"),
             inverseJoinColumns = @JoinColumn(name = "dish_id"))
+    @ToString.Exclude
     List<Dish> dishes;
 }

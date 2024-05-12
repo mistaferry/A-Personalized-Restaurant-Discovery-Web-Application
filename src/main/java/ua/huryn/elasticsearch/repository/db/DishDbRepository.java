@@ -28,4 +28,11 @@ public interface DishDbRepository extends JpaRepository<Dish,Long> {
             "         join db.dish d on re.dish_id = d.dish_id\n" +
             "where r.restaurant_id = :restaurant_id")
     List<Dish> findByRestaurantId(@Param("restaurant_id") Long restaurantId);
+
+    @Query(nativeQuery = true, value = "select d.*\n" +
+            "from restaurant r\n" +
+            "         join db.restaurant_dish re on r.restaurant_id = re.restaurant_id\n" +
+            "         join db.dish d on re.dish_id = d.dish_id\n" +
+            "where r.restaurant_id = :restaurant_id")
+    List<Dish> findIdListByRestaurantId(@Param("restaurant_id") Long restaurantId);
 }

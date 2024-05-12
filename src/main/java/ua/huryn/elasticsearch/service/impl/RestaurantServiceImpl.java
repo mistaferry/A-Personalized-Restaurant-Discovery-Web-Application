@@ -148,6 +148,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantDTO> getAll() {
+        List<Restaurant> allRestaurants = restaurantDbRepository.getAll();
+        for (Restaurant restaurant: allRestaurants){
+            List<Dish> dishesListByRestaurantId = dishDbRepository.findByRestaurantId(restaurant.getId());
+            restaurant.setDishes(dishesListByRestaurantId);
+        }
         return Convertor.convertRestaurantEntityListToDTO(restaurantDbRepository.getAll());
     }
 
@@ -362,7 +367,6 @@ public class RestaurantServiceImpl implements RestaurantService {
     public void addDataToDb() throws IOException, InterruptedException, ApiException {
         List<LatLng> locationsList = getLocationFromJson();
         List<String> cuisineList = getCuisineTypeFromJson();
-        cuisineList = cuisineList.subList(1,2);
         GeoApiContext context = getGeoApiContext();
 
         log.info("Received information about {} cuisines and {} locations", cuisineList.size(), locationsList.size());
@@ -373,7 +377,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                         .radius(3500)
                         .type(PlaceType.RESTAURANT)
                         .keyword(cuisine)
-                        .language("ua")
+                        .language("uk")
                         .await();
 
                 PlacesSearchResult[] placesSearchResults = response.results;
@@ -389,7 +393,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             PlacesSearchResponse response = PlacesApi.nearbySearchQuery(context, loc)
                     .radius(3500)
                     .type(PlaceType.RESTAURANT)
-                    .language("ua")
+                    .language("uk")
                     .await();
 
             PlacesSearchResult[] placesSearchResults = response.results;
@@ -405,7 +409,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 response = PlacesApi.nearbySearchQuery(context, loc)
                         .radius(1500)
                         .type(PlaceType.RESTAURANT)
-                        .language("ua")
+                        .language("uk")
                         .pageToken(nextPageToken)
                         .await();
                 saveDataFromResponseToDb(response.results, context, cuisine);
@@ -493,8 +497,8 @@ public class RestaurantServiceImpl implements RestaurantService {
             restaurant.setPhotoRef(null);
         }
         setPriceLevelAndWebsite(restaurantResult, restaurant, context);
-        restaurant.setCategories(getCategories(restaurantResult));
         restaurant.setDishes(getDishes(cuisine));
+        restaurant.setCategories(getCategories(restaurantResult));
         return restaurant;
     }
 
@@ -531,7 +535,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 outputDir.mkdirs();
             }
 
-            String imagePath = "db_data/restaurant_images/" + restaurant.getName().toLowerCase() + "_image.jpg";
+            String imagePath = "db_data/restaurant_images/" + restaurant.getPlaceId() + ".jpg";
             String path = parentDirectory + imagePath;
             try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(imageData);
@@ -559,13 +563,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 restaurant.setWebsite(website);
             }
 
-
-            RestaurantInfoEn restaurantInfoEn = new RestaurantInfoEn();
-            restaurantInfoEn.setRestaurantId(restaurant.getId());
-            restaurantInfoEn.setNameEn(details.name);
-            restaurantInfoEn.setAddressEn(details.vicinity);
-            restaurantInfoEnDbRepository.save(restaurantInfoEn);
-
         } catch (Exception e) {
             log.error("Unable to retrieve restaurant data from placeId: " + restaurantResult.placeId);
         }
@@ -587,6 +584,11 @@ public class RestaurantServiceImpl implements RestaurantService {
                     reviewDbRepository.save(placeReview);
                 }
             }
+            RestaurantInfoEn restaurantInfoEn = new RestaurantInfoEn();
+            restaurantInfoEn.setRestaurantId(restaurant.getId());
+            restaurantInfoEn.setNameEn(details.name);
+            restaurantInfoEn.setAddressEn(details.vicinity);
+            restaurantInfoEnDbRepository.save(restaurantInfoEn);
         } catch (ApiException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -614,7 +616,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         return categoriesList;
     }
 
-
     private List<Dish> getDishes(String cuisineType){
         return dishDbRepository.findByCuisineType(cuisineType);
     }
@@ -622,7 +623,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void addApiDataToFile(){
         try {
-            List<Restaurant> restaurants = restaurantDbRepository.findAll();
+            List<RestaurantDTO> restaurants = getAll();
 
             ObjectMapper mapper = new ObjectMapper();
 
@@ -667,7 +668,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             for (String part : parts) {
-                boolQuery.must(QueryBuilders.wildcardQuery("search_string", "*" + part + "*"));
+                boolQuery.must(QueryBuilders.wildcardQuery("search_string_ukr", "*" + part + "*"));
             }
 
             String queryString = boolQuery.toString();

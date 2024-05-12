@@ -18,7 +18,6 @@ import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import ua.huryn.elasticsearch.view.components.Filters;
 import ua.huryn.elasticsearch.view.components.RestaurantItem;
 
@@ -34,7 +33,7 @@ import static ua.huryn.elasticsearch.utils.QueryParameter.getStringSetFromQueryP
 
 @CssImport("styles.css")
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
-public class Menu extends VerticalLayout implements BeforeEnterObserver {
+public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final Filters filters;
     private final RestaurantService restaurantService;
     private final DishService dishService;
@@ -48,7 +47,7 @@ public class Menu extends VerticalLayout implements BeforeEnterObserver {
     Div menuDiv;
 
     @Autowired
-    public Menu(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
+    public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
         this.restaurantService = restaurantService;
         this.dishService = dishService;
         this.ingredientsService = ingredientsService;
