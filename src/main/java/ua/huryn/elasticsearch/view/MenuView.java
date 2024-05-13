@@ -15,9 +15,14 @@ import elemental.json.JsonObject;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.config.GeneralProperties;
+import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.repository.db.UserDbRepository;
 import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
@@ -42,6 +47,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final DishService dishService;
     private final IngredientsService ingredientsService;
     private final GeneralProperties generalProperties;
+    private final UserDbRepository userDbRepository;
     private int currentPage = 0;
     private int pageSize = 10;
 
@@ -51,13 +57,16 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     Div menuDiv;
 
     @Autowired
-    public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService, GeneralProperties generalProperties) {
+    public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService, GeneralProperties generalProperties, UserDbRepository userDbRepository) {
         this.restaurantService = restaurantService;
         this.dishService = dishService;
         this.ingredientsService = ingredientsService;
         this.generalProperties = generalProperties;
         this.filters = new Filters(restaurantService, dishService, ingredientsService);
         this.restaurantItem = new RestaurantItem(generalProperties);
+        this.userDbRepository = userDbRepository;
+
+        addAuthUserToDb();
 
         addListeners(this::updateMenu);
 
@@ -239,6 +248,24 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Set<Integer> routeSet = getIntegerSetFromQueryParameters(queryParameters, "route");
         if (!routeSet.isEmpty()) {
             filters.getRouteCheckbox().setValue(routeSet);
+        }
+    }
+
+    void addAuthUserToDb(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        OAuth2AuthenticatedPrincipal principal = (OAuth2AuthenticatedPrincipal) authentication.getPrincipal();
+
+        String email = principal.getAttribute("email");
+        User existingUser = userDbRepository.findByEmail(email).orElse(null);
+        if(existingUser == null){
+            String givenName = principal.getAttribute("given_name");
+            String familyName = principal.getAttribute("family_name");
+            String picture = principal.getAttribute("picture");
+            User user = new User();
+            user.setUsername(givenName + " " + familyName);
+            user.setEmail(email);
+            user.setPicture(picture);
+            userDbRepository.save(user);
         }
     }
 }

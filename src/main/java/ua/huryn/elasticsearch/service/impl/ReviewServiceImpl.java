@@ -13,7 +13,9 @@ import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.service.ReviewService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -36,7 +38,15 @@ public class ReviewServiceImpl implements ReviewService {
         for (Review review: reviews){
             review.setRestaurant(restaurant);
         }
+        reviews = sortReviewsByTime(reviews);
+
         return Convertor.convertReviewEntityListToDTO(reviews);
+    }
+
+    private List<Review> sortReviewsByTime(List<Review> reviews) {
+        return reviews.stream()
+                .sorted(Comparator.comparing(Review::getTime).reversed()) // Сортуємо за датою у зворотньому порядку
+                .collect(Collectors.toList());
     }
 
     @Override

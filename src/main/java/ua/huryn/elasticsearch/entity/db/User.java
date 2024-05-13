@@ -19,4 +19,6 @@ public class User {
     private String username;
     @Column(name = "email")
     private String email;
+    @Column(name = "picture")
+    private String picture;
 }

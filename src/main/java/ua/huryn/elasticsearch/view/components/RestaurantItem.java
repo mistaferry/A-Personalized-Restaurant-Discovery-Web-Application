@@ -10,10 +10,9 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.catalina.webresources.FileResource;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
-import ua.huryn.elasticsearch.view.RestaurantView;
+import ua.huryn.elasticsearch.view.RestaurantInfoView;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -65,7 +64,7 @@ public class RestaurantItem {
         infoDiv.addClassNames("info flex-column width-60");
         int end = Math.min(24, restaurant.getName().length());
         String route = RouteConfiguration.forSessionScope()
-                .getUrl(RestaurantView.class, restaurant.getRestaurantId());
+                .getUrl(RestaurantInfoView.class, restaurant.getRestaurantId());
         Anchor restaurantName = new Anchor(route, restaurant.getName().substring(0, end));
         restaurantName.getStyle().setTextDecoration("none").setColor("000000FF");
         Div resNameDiv = new Div();

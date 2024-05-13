@@ -590,13 +590,13 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     private void saveRestaurantReviews(Restaurant restaurant, String placeId, GeoApiContext context){
         try {
-            PlaceDetails details = PlacesApi.placeDetails(context, restaurant.getPlaceId()).language("en").await();
+            PlaceDetails details = PlacesApi.placeDetails(context, restaurant.getPlaceId()).language("uk").await();
             if(details != null){
                 PlaceDetails.Review[] placeReviews = details.reviews;
                 if (placeReviews != null) {
                     for (PlaceDetails.Review review : placeReviews) {
                         Review placeReview = new Review();
-                        User user = userDbRepository.findById(1L).orElse(null);
+                        User user = userDbRepository.findById(0L).orElse(null);
                         String text = review.text;
                         String truncatedText = text.substring(0, Math.min(text.length(), 255));
                         placeReview.setText(truncatedText);

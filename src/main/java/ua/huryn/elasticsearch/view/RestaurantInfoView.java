@@ -1,7 +1,6 @@
 package ua.huryn.elasticsearch.view;
 
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -9,39 +8,47 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
-import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.db.Review;
+import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.dto.ReviewDTO;
+import ua.huryn.elasticsearch.repository.db.UserDbRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.service.ReviewService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
-import java.awt.*;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 @Route(value = "restaurant", layout = MainView.class)
 @PermitAll
-public class RestaurantView extends Div implements HasUrlParameter<Long> {
+public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     private Long restaurantId;
     private RestaurantDTO restaurant;
     private final RestaurantService restaurantService;
     private final ReviewService reviewService;
+    private final UserDbRepository userDbRepository;
+    private final User user;
     private Double latitude;
+    Div reviewDiv;
+    MessageInput input;
 
-    public RestaurantView(RestaurantService restaurantService, ReviewService reviewService) {
+    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository) {
         this.restaurantService = restaurantService;
         this.reviewService = reviewService;
+        this.userDbRepository = userDbRepository;
+        this.user = getUser();
+        this.input = new MessageInput();
+        inputMessageListener();
     }
 
     @Override
@@ -157,35 +164,18 @@ public class RestaurantView extends Div implements HasUrlParameter<Long> {
     }
 
     public Div reviewsDiv() {
-        Restaurant rest = Convertor.convertToEntity(restaurantService.findByRestaurantId(restaurantId));
-        Div reviewDiv = new Div();
+//        Restaurant rest = Convertor.convertToEntity(restaurantService.findByRestaurantId(restaurantId));
+        reviewDiv = new Div();
         reviewDiv.addClassNames("review-div");
 
         Div inputReview = new Div();
-        MessageInput input = new MessageInput();
-
-        input.addSubmitListener(submitEvent -> {
-            MessageListItem newMessage = new MessageListItem(
-                    submitEvent.getValue(), Instant.now(), "Milla Sting");
-            Review review = new Review();
-            review.setText(newMessage.getText());
-            review.setRestaurant(rest);
-            review.setTime(Timestamp.from(newMessage.getTime()));
-            reviewService.saveToDb(review);
-        });
         inputReview.add(input);
 
         reviewDiv.add(inputReview);
 
         Div listOfReviews = new Div();
-        MessageList list = new MessageList();
-        List<ReviewDTO> reviews = reviewService.getReviewsByRestaurant(restaurant);
-        List<MessageListItem> messages = new ArrayList<>();
+        MessageList list = getMessageList();
 
-        for (ReviewDTO review : reviews) {
-            messages.add(new MessageListItem(review.getText(), review.getTime().toInstant(), review.getUserDTO().getUsername()));
-        }
-        list.setItems(messages);
         listOfReviews.add(list);
 
         listOfReviews.getStyle().set("max-height", "300px");
@@ -195,4 +185,36 @@ public class RestaurantView extends Div implements HasUrlParameter<Long> {
         return reviewDiv;
     }
 
+    private MessageList getMessageList(){
+        MessageList list = new MessageList();
+        List<ReviewDTO> reviews = reviewService.getReviewsByRestaurant(restaurant);
+        List<MessageListItem> messages = new ArrayList<>();
+
+        for (ReviewDTO review : reviews) {
+            messages.add(new MessageListItem(review.getText(), review.getTime().toInstant(), review.getUserDTO().getUsername(), review.getUserDTO().getPicture()));
+        }
+        list.setItems(messages);
+        return list;
+    }
+
+    private User getUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        OAuth2AuthenticatedPrincipal principal = (OAuth2AuthenticatedPrincipal) authentication.getPrincipal();
+        return userDbRepository.findByEmail(principal.getAttribute("email")).orElse(null);
+    }
+
+    void inputMessageListener(){
+        input.addSubmitListener(submitEvent -> {
+            MessageListItem newMessage = new MessageListItem(
+                    submitEvent.getValue(), Instant.now(), user.getUsername());
+            Review review = new Review();
+            review.setText(newMessage.getText());
+            review.setRestaurant(Convertor.convertToEntity(restaurant));
+            review.setTime(Timestamp.from(newMessage.getTime()));
+            review.setUser(user);
+            reviewService.saveToDb(review);
+            removeAll();
+            add(pageDiv());
+        });
+    }
 }
