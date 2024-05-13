@@ -52,7 +52,6 @@ public class RestaurantItem {
         });
         Image image = new Image(resource, "Image");
 
-//        image.setSrc(scr);
         image.addClassNames("image");
         imageContainer.add(image);
 
@@ -92,8 +91,8 @@ public class RestaurantItem {
 
         Div rate = new Div();
         rate.addClassNames("info width-30");
-
-        String formattedRating = String.format("⭐ " + Math.round(restaurant.getRating()));
+        long rating = Math.round(restaurant.getRating());
+        String formattedRating = String.format("⭐ " + rating);
         Text ratingValue = new Text(formattedRating);
 
         rate.add(ratingValue);

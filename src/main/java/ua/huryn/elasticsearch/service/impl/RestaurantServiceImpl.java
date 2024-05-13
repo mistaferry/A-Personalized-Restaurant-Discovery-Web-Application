@@ -698,7 +698,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             for (String part : parts) {
-                boolQuery.must(QueryBuilders.wildcardQuery("search_string", "*" + part + "*"));
+                boolQuery.must(QueryBuilders.wildcardQuery("search_string_ukr", "*" + part + "*"));
             }
 
             String queryString = boolQuery.toString();

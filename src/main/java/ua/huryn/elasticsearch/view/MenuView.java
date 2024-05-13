@@ -55,6 +55,8 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     TextField routesDeparturePoint;
     TextField fullTextSearchField = new TextField();
     Div menuDiv;
+    private Button reviewKeywordsButton;
+    private TextField reviewKeywordsInput;
 
     @Autowired
     public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService, GeneralProperties generalProperties, UserDbRepository userDbRepository) {
@@ -65,6 +67,9 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         this.filters = new Filters(restaurantService, dishService, ingredientsService);
         this.restaurantItem = new RestaurantItem(generalProperties);
         this.userDbRepository = userDbRepository;
+        this.reviewKeywordsButton = filters.getReviewSearchButton();
+        this.reviewKeywordsInput = filters.getReviewKeywordInput();
+        this.routesDeparturePoint = new TextField();
 
         addAuthUserToDb();
 
@@ -219,10 +224,8 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
-//        String routeDeparturePointValue = routesDeparturePoint.getValue();
+        String routeDeparturePointValue = routesDeparturePoint.getValue();
         String fullTextSearch = fullTextSearchField.getValue();
-
-        String routeDeparturePointValue = null;
         return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch);
     }
 
@@ -248,6 +251,16 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Set<Integer> routeSet = getIntegerSetFromQueryParameters(queryParameters, "route");
         if (!routeSet.isEmpty()) {
             filters.getRouteCheckbox().setValue(routeSet);
+        }
+
+        Set<String> dishesSet = getStringSetFromQueryParameters(queryParameters, "dish");
+        if (!dishesSet.isEmpty()) {
+            filters.getDishesCheckbox().setValue(dishesSet);
+        }
+
+        Set<String> ingredientSet = getStringSetFromQueryParameters(queryParameters, "ingredient");
+        if (!ingredientSet.isEmpty()) {
+            filters.getIngredientsCheckbox().setValue(ingredientSet);
         }
     }
 

@@ -1,5 +1,6 @@
 package ua.huryn.elasticsearch.controller;
 
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +16,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurants")
+@PermitAll
 @RequiredArgsConstructor
 public class RestaurantController {
     private final RestaurantService restaurantService;
 
     @GetMapping("/search")
+    @PermitAll
     public List<RestaurantDTO> searchRestaurants(
             @RequestParam("string") String string
     ) {

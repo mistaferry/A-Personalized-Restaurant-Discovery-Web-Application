@@ -7,6 +7,9 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.messages.MessageInput;
+import com.vaadin.flow.component.messages.MessageInputI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import lombok.Getter;
@@ -43,6 +46,8 @@ public class Filters {
     TextField routesDeparturePoint = new TextField();
     private Button dishesSaveButton;
     private Runnable onSave;
+    private Button reviewSearchButton;
+    private TextField reviewKeywordInput;
 
 
     public Filters(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
@@ -59,6 +64,8 @@ public class Filters {
         this.ingredientsComboBox =  new ComboBox<>();
         this.partOfIngredientCheckbox = new CheckboxGroup<>();
         this.partOfDishCheckbox = new CheckboxGroup<>();
+        this.reviewSearchButton = new Button("Пошук");
+        this.reviewKeywordInput = new TextField();
 
         setupDishElementsListeners();
         setupIngredientElementsListeners();
@@ -68,7 +75,7 @@ public class Filters {
     public Div createFiltersDiv() {
         Div filtersDiv = new Div();
         filtersDiv.addClassNames("filters");
-        filtersDiv.add(createCuisineFilter(), createRatingFilter(), createRouteFilter(), createPriceFilter(), createDishesFilter(), createIngredientsFilter());
+        filtersDiv.add(createCuisineFilter(), createRatingFilter(), createRouteFilter(), createPriceFilter(), createDishesFilter(), createIngredientsFilter(), createReviewFilter());
 
         return filtersDiv;
     }
@@ -310,5 +317,22 @@ public class Filters {
             selectedIngredients.addAll(event.getValue());
             ingredientsCheckbox.setValue(selectedIngredients);
         });
+    }
+
+    private Div createReviewFilter(){
+        Div priceDiv = new Div();
+        priceDiv.addClassNames("main-div");
+        Div inputContainer = new Div();
+        inputContainer.addClassNames("d-flex flex-wrap justify-content-between");
+//        inputContainer.getStyle().setMaxWidth("100%");
+
+        reviewKeywordInput.setLabel("Відгуки");
+        reviewKeywordInput.setClassName("review-text");
+        reviewKeywordInput.setPlaceholder("Ключові слова");
+
+        inputContainer.add(reviewKeywordInput, reviewSearchButton);
+        priceDiv.add(inputContainer);
+
+        return priceDiv;
     }
 }

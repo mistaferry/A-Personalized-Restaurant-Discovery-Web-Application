@@ -9,11 +9,13 @@ import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import ua.huryn.elasticsearch.MainView;
+import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.db.Review;
 import ua.huryn.elasticsearch.entity.db.User;
@@ -24,10 +26,14 @@ import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.service.ReviewService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.reflections.Reflections.log;
 
 @Route(value = "restaurant", layout = MainView.class)
 @PermitAll
@@ -37,17 +43,21 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     private final RestaurantService restaurantService;
     private final ReviewService reviewService;
     private final UserDbRepository userDbRepository;
+    private final String localDirectory;
+    private final GeneralProperties generalProperties;
     private final User user;
     private Double latitude;
-    Div reviewDiv;
-    MessageInput input;
+    private Div reviewDiv;
+    private MessageInput input;
 
-    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository) {
+    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository, GeneralProperties generalProperties) {
         this.restaurantService = restaurantService;
         this.reviewService = reviewService;
         this.userDbRepository = userDbRepository;
         this.user = getUser();
         this.input = new MessageInput();
+        this.generalProperties = generalProperties;
+        this.localDirectory=generalProperties.getLocalDirectory();
         inputMessageListener();
     }
 
@@ -72,61 +82,79 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
 
     }
 
-    public Div mainInfoDiv() {
-        Div mainInfoDiv = new Div();
-        mainInfoDiv.addClassNames("restaurant-page-info-div");
-
-        Div restaurantPhotosDiv = new Div();
-        restaurantPhotosDiv.addClassNames("restaurant-image");
-
-        Div photo = new Div();
-        photo.addClassNames("basic");
-        Image image = new Image();
-        image.setSrc("https://t3.ftcdn.net/jpg/03/24/73/92/360_F_324739203_keeq8udvv0P2h1MLYJ0GLSlTBagoXS48.jpg");
-        photo.add(image);
-        restaurantPhotosDiv.add(photo);
-
-        Div leftPartDiv = new Div();
-        leftPartDiv.addClassNames("restaurant-info-div");
-
-        Div restaurantData = new Div();
-        restaurantData.addClassNames("restaurant-data");
-
-        Div restaurantName = new Div(new Span(restaurant.getName()));
-        restaurantName.getStyle().setFontSize("24px");
-
-        String cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
-        Div cuisineType = new Div(new Span(cuisine + " кухня"));
-        cuisineType.getStyle().setColor("#003399");
-
-        restaurantData.add(restaurantName, cuisineType);
-
-        String restaurantWebsite = restaurant.getWebsite();
-        if (restaurantWebsite != null && !restaurantWebsite.equals("null")) {
-            Anchor website = new Anchor(restaurantWebsite, restaurantWebsite);
-            website.setTarget("_blank");
-            website.getStyle().setTextDecoration("none").setColor("black");
-            Text text = new Text("Вебсайт - ");
-            Div websiteLink = new Div(text, website);
-            restaurantData.add(websiteLink);
-        }
-
-        Div address = new Div(new Span(restaurant.getAddress()));
-        Div rating = new Div(new Span("Рейтинг - " + String.format(String.valueOf(Math.round(restaurant.getRating()))) + " ⭐"));
-        restaurantData.add(address, rating);
-
-        leftPartDiv.add(restaurantData);
-
-        mainInfoDiv.add(leftPartDiv, restaurantPhotosDiv);
-        return mainInfoDiv;
-    }
+//    public Div mainInfoDiv() {
+//        Div mainInfoDiv = new Div();
+//        mainInfoDiv.addClassNames("restaurant-page-info-div");
+//
+//        Div restaurantPhotosDiv = new Div();
+//        restaurantPhotosDiv.addClassNames("restaurant-image");
+//
+//        Div photo = new Div();
+//        photo.addClassNames("basic");
+//        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+//
+//        StreamResource resource = new StreamResource("image.jpg", () -> {
+//            try {
+//                return new FileInputStream(scr);
+//            } catch (FileNotFoundException e) {
+//                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+//            }
+//            return null;
+//        });
+//        Image image = new Image(resource, "Image");
+//        photo.add(image);
+//        restaurantPhotosDiv.add(photo);
+//
+//        Div leftPartDiv = new Div();
+//        leftPartDiv.addClassNames("restaurant-info-div");
+//
+//        Div restaurantData = new Div();
+//        restaurantData.addClassNames("restaurant-data");
+//
+//        Div restaurantName = new Div(new Span(restaurant.getName()));
+//        restaurantName.getStyle().setFontSize("24px");
+//
+//        String cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
+//        Div cuisineType = new Div(new Span(cuisine + " кухня"));
+//        cuisineType.getStyle().setColor("#003399");
+//
+//        restaurantData.add(restaurantName, cuisineType);
+//
+//        String restaurantWebsite = restaurant.getWebsite();
+//        if (restaurantWebsite != null && !restaurantWebsite.equals("null")) {
+//            Anchor website = new Anchor(restaurantWebsite, restaurantWebsite);
+//            website.setTarget("_blank");
+//            website.getStyle().setTextDecoration("none").setColor("black");
+//            Text text = new Text("Вебсайт - ");
+//            Div websiteLink = new Div(text, website);
+//            restaurantData.add(websiteLink);
+//        }
+//
+//        Div address = new Div(new Span(restaurant.getAddress()));
+//        Div rating = new Div(new Span("Рейтинг - " + String.format(String.valueOf(Math.round(restaurant.getRating()))) + " ⭐"));
+//        restaurantData.add(address, rating);
+//
+//        leftPartDiv.add(restaurantData);
+//
+//        mainInfoDiv.add(leftPartDiv, restaurantPhotosDiv);
+//        return mainInfoDiv;
+//    }
 
     public Div infoDiv() {
         Div imageDiv = new Div();
         imageDiv.addClassNames("curr-restaurant-info-div");
 
-        Image image = new Image();
-        image.setSrc("https://t3.ftcdn.net/jpg/03/24/73/92/360_F_324739203_keeq8udvv0P2h1MLYJ0GLSlTBagoXS48.jpg");
+        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+
+        StreamResource resource = new StreamResource("image.jpg", () -> {
+            try {
+                return new FileInputStream(scr);
+            } catch (FileNotFoundException e) {
+                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+            }
+            return null;
+        });
+        Image image = new Image(resource, "Image");
         image.addClassNames("fit-c");
 
         Div downPartDiv = new Div();

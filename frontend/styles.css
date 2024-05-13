@@ -162,7 +162,7 @@ vaadin-checkbox{
 }
 
 .review-div{
-    width: 48%;
+    width: 80%;
     height: 50%;
     margin: 3%;
     /*background: #2b908f;*/
@@ -171,4 +171,8 @@ vaadin-checkbox{
 .login-button{
     display: flex;
     align-self: end;
+}
+
+.review-text{
+    width: 60%;
 }
