@@ -11,6 +11,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import ua.huryn.elasticsearch.view.LoginView;
+import ua.huryn.elasticsearch.view.MenuView;
 
 import java.awt.*;
 
@@ -24,5 +26,8 @@ public class MainView extends AppLayout {
         H1 logo = new H1("Diploma Huryn");
         var header = new HorizontalLayout(new DrawerToggle(), logo);
         addToNavbar(header);
+        SideNavItem dashboardLink = new SideNavItem("Menu", MenuView.class, VaadinIcon.COFFEE.create());
+        SideNavItem inboxLink = new SideNavItem("Login", LoginView.class, VaadinIcon.USER.create());
+        addToDrawer(dashboardLink, inboxLink);
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Configuration
 public class SecurityConfig extends VaadinWebSecurity {
 
-    private static final String LOGIN_URL = "/login";
+    private static final String LOGIN_URL = "/oauth2/authorization/google";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

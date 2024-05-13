@@ -15,9 +15,6 @@ public class LoginView extends VerticalLayout {
     private static final String OAUTH_URL = "/oauth2/authorization/google";
 
     public LoginView() {
-        Anchor loginLink = new Anchor(OAUTH_URL, "Login with Google");
-        // Instruct Vaadin Router to ignore doing SPA handling
-        loginLink.setRouterIgnore(true);
-        add(loginLink);
+        getUI().ifPresent(ui -> ui.navigate(OAUTH_URL));
     }
 }
