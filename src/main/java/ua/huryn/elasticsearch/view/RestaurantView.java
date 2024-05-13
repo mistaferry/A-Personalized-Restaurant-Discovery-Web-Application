@@ -9,6 +9,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.messages.MessageInput;
 import com.vaadin.flow.component.messages.MessageList;
 import com.vaadin.flow.component.messages.MessageListItem;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.*;
 import jakarta.annotation.security.PermitAll;
@@ -30,11 +31,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Route(value = "restaurant", layout = MainView.class)
+@PermitAll
 public class RestaurantView extends Div implements HasUrlParameter<Long> {
     private Long restaurantId;
     private RestaurantDTO restaurant;
     private final RestaurantService restaurantService;
     private final ReviewService reviewService;
+    private Double latitude;
 
     public RestaurantView(RestaurantService restaurantService, ReviewService reviewService) {
         this.restaurantService = restaurantService;
@@ -159,11 +162,6 @@ public class RestaurantView extends Div implements HasUrlParameter<Long> {
         reviewDiv.addClassNames("review-div");
 
         Div inputReview = new Div();
-//        TextArea textArea = new TextArea();
-//        textArea.setWidthFull();
-//        textArea.setMaxHeight("100px");
-//        textArea.setLabel("Новий відгук");
-//        Div addReviewButton = new Div(new Button("Додати"));
         MessageInput input = new MessageInput();
 
         input.addSubmitListener(submitEvent -> {
@@ -183,14 +181,16 @@ public class RestaurantView extends Div implements HasUrlParameter<Long> {
         MessageList list = new MessageList();
         List<ReviewDTO> reviews = reviewService.getReviewsByRestaurant(restaurant);
         List<MessageListItem> messages = new ArrayList<>();
-        System.out.println("reviews - " + reviews.size());
-
 
         for (ReviewDTO review : reviews) {
             messages.add(new MessageListItem(review.getText(), review.getTime().toInstant(), review.getUserDTO().getUsername()));
         }
         list.setItems(messages);
         listOfReviews.add(list);
+
+        listOfReviews.getStyle().set("max-height", "300px");
+        listOfReviews.getStyle().set("overflow-y", "auto");
+
         reviewDiv.add(listOfReviews);
         return reviewDiv;
     }

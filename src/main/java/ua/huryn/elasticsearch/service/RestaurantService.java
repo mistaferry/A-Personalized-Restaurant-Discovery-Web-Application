@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.maps.errors.ApiException;
+import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 
@@ -43,4 +44,6 @@ public interface RestaurantService {
     void addApiDataToFile();
 
     void addDataFromFileToDb();
+
+    void setAllRestaurantListsData(Restaurant restaurant);
 }

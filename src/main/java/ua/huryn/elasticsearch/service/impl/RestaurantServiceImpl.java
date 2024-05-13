@@ -6,7 +6,6 @@ import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.errors.InvalidRequestException;
 import com.google.maps.model.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -121,6 +120,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public RestaurantDTO findByRestaurantId(Long id) {
         Restaurant restaurant = restaurantDbRepository.findById(id);
+        List<Category> categories = categoryDbRepository.findByRestaurantId(restaurant.getId());
+        restaurant.setCategories(categories);
+        setAllRestaurantListsData(restaurant);
         return Convertor.convertToDTO(restaurant);
     }
 
@@ -162,14 +164,21 @@ public class RestaurantServiceImpl implements RestaurantService {
     public List<RestaurantDTO> getAll() {
         List<Restaurant> restaurants = restaurantDbRepository.getAll();
         for (Restaurant restaurant: restaurants) {
-            List<Dish> dishes = dishDbRepository.findByRestaurantId(restaurant.getId());
-            for (Dish dish: dishes){
-                List<Ingredient> ingredients = ingredientDbRepository.findIngredientsByDishId(dish.getId()).orElse(null);
-                dish.setIngredients(ingredients);
-            }
-            restaurant.setDishes(dishes);
+            setAllRestaurantListsData(restaurant);
         }
         return Convertor.convertRestaurantEntityListToDTO(restaurants);
+    }
+
+    @Override
+    public void setAllRestaurantListsData(Restaurant restaurant) {
+        List<Category> categories = categoryDbRepository.findByRestaurantId(restaurant.getId());
+        restaurant.setCategories(categories);
+        List<Dish> dishes = dishDbRepository.findByRestaurantId(restaurant.getId());
+        for (Dish dish: dishes){
+            List<Ingredient> ingredients = ingredientDbRepository.findIngredientsByDishId(dish.getId()).orElse(null);
+            dish.setIngredients(ingredients);
+        }
+        restaurant.setDishes(dishes);
     }
 
     private GeoApiContext getGeoApiContext() throws IOException {
@@ -235,7 +244,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         filteredData = filteredByDishes(dishes, filteredData);
         filteredData = filteredByIngredients(ingredients, filteredData);
 
-//        System.out.println("filtered size - " + filteredData.size());
+//        log.debug("filtered size - " + filteredData.size());
         return filteredData;
     }
 
@@ -703,8 +712,6 @@ public class RestaurantServiceImpl implements RestaurantService {
             for (RestaurantModel restaurantModel : list) {
                 entityList.add(restaurantDbRepository.findById(restaurantModel.getRestaurantId()));
             }
-//            System.out.println("parts - " + searchString);
-//            System.out.println("size - " + entityList.size());
             return Convertor.convertRestaurantEntityListToDTO(entityList);
         }
         return restaurantList;

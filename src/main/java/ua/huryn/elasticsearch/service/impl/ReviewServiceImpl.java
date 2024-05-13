@@ -9,6 +9,7 @@ import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.dto.ReviewDTO;
 import ua.huryn.elasticsearch.repository.db.RestaurantDbRepository;
 import ua.huryn.elasticsearch.repository.db.ReviewDbRepository;
+import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.service.ReviewService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
@@ -20,6 +21,7 @@ import java.util.List;
 public class ReviewServiceImpl implements ReviewService {
     private final RestaurantDbRepository restaurantDbRepository;
     private final ReviewDbRepository reviewDbRepository;
+    private final RestaurantService restaurantService;
 
     @Override
     public List<ReviewDTO> getAll() {
@@ -29,7 +31,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewDTO> getReviewsByRestaurant(RestaurantDTO restaurantDTO) {
         Restaurant restaurant = restaurantDbRepository.findById(restaurantDTO.getRestaurantId());
-        List<Review> reviews = reviewDbRepository.getReviewByRestaurant(restaurant);
+        List<Review> reviews = reviewDbRepository.getReviewByRestaurantId(restaurantDTO.getRestaurantId());
+        restaurantService.setAllRestaurantListsData(restaurant);
+        for (Review review: reviews){
+            review.setRestaurant(restaurant);
+        }
         return Convertor.convertReviewEntityListToDTO(reviews);
     }
 

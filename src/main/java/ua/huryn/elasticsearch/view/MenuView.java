@@ -12,13 +12,14 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.*;
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import ua.huryn.elasticsearch.MainView;
+import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import ua.huryn.elasticsearch.view.components.Filters;
 import ua.huryn.elasticsearch.view.components.RestaurantItem;
 
@@ -30,15 +31,16 @@ import static ua.huryn.elasticsearch.utils.QueryParameter.getStringSetFromQueryP
 
 @PageTitle("Menu")
 @Route(value = "", layout = MainView.class)
-//@Route(value = "")
-
+@PermitAll
 @CssImport("styles.css")
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
-public class Menu extends VerticalLayout implements BeforeEnterObserver {
+public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final Filters filters;
+    private final RestaurantItem restaurantItem;
     private final RestaurantService restaurantService;
     private final DishService dishService;
     private final IngredientsService ingredientsService;
+    private final GeneralProperties generalProperties;
     private int currentPage = 0;
     private int pageSize = 10;
 
@@ -48,11 +50,13 @@ public class Menu extends VerticalLayout implements BeforeEnterObserver {
     Div menuDiv;
 
     @Autowired
-    public Menu(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
+    public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService, GeneralProperties generalProperties) {
         this.restaurantService = restaurantService;
         this.dishService = dishService;
         this.ingredientsService = ingredientsService;
+        this.generalProperties = generalProperties;
         this.filters = new Filters(restaurantService, dishService, ingredientsService);
+        this.restaurantItem = new RestaurantItem(generalProperties);
 
         addListeners(this::updateMenu);
 
@@ -96,7 +100,7 @@ public class Menu extends VerticalLayout implements BeforeEnterObserver {
 
 
             for (RestaurantDTO restaurant : currentRestaurants) {
-                restaurantsDiv.add(RestaurantItem.create(restaurant));
+                restaurantsDiv.add(restaurantItem.create(restaurant));
             }
 
             Div paginationDiv = new Div();
