@@ -11,12 +11,12 @@ import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.PermitAll;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.config.GeneralProperties;
-import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.db.Review;
 import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
@@ -46,7 +46,6 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     private final String localDirectory;
     private final GeneralProperties generalProperties;
     private final User user;
-    private Double latitude;
     private Div reviewDiv;
     private MessageInput input;
 
@@ -82,80 +81,11 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
 
     }
 
-//    public Div mainInfoDiv() {
-//        Div mainInfoDiv = new Div();
-//        mainInfoDiv.addClassNames("restaurant-page-info-div");
-//
-//        Div restaurantPhotosDiv = new Div();
-//        restaurantPhotosDiv.addClassNames("restaurant-image");
-//
-//        Div photo = new Div();
-//        photo.addClassNames("basic");
-//        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
-//
-//        StreamResource resource = new StreamResource("image.jpg", () -> {
-//            try {
-//                return new FileInputStream(scr);
-//            } catch (FileNotFoundException e) {
-//                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
-//            }
-//            return null;
-//        });
-//        Image image = new Image(resource, "Image");
-//        photo.add(image);
-//        restaurantPhotosDiv.add(photo);
-//
-//        Div leftPartDiv = new Div();
-//        leftPartDiv.addClassNames("restaurant-info-div");
-//
-//        Div restaurantData = new Div();
-//        restaurantData.addClassNames("restaurant-data");
-//
-//        Div restaurantName = new Div(new Span(restaurant.getName()));
-//        restaurantName.getStyle().setFontSize("24px");
-//
-//        String cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
-//        Div cuisineType = new Div(new Span(cuisine + " кухня"));
-//        cuisineType.getStyle().setColor("#003399");
-//
-//        restaurantData.add(restaurantName, cuisineType);
-//
-//        String restaurantWebsite = restaurant.getWebsite();
-//        if (restaurantWebsite != null && !restaurantWebsite.equals("null")) {
-//            Anchor website = new Anchor(restaurantWebsite, restaurantWebsite);
-//            website.setTarget("_blank");
-//            website.getStyle().setTextDecoration("none").setColor("black");
-//            Text text = new Text("Вебсайт - ");
-//            Div websiteLink = new Div(text, website);
-//            restaurantData.add(websiteLink);
-//        }
-//
-//        Div address = new Div(new Span(restaurant.getAddress()));
-//        Div rating = new Div(new Span("Рейтинг - " + String.format(String.valueOf(Math.round(restaurant.getRating()))) + " ⭐"));
-//        restaurantData.add(address, rating);
-//
-//        leftPartDiv.add(restaurantData);
-//
-//        mainInfoDiv.add(leftPartDiv, restaurantPhotosDiv);
-//        return mainInfoDiv;
-//    }
-
     public Div infoDiv() {
         Div imageDiv = new Div();
         imageDiv.addClassNames("curr-restaurant-info-div");
 
-        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
-
-        StreamResource resource = new StreamResource("image.jpg", () -> {
-            try {
-                return new FileInputStream(scr);
-            } catch (FileNotFoundException e) {
-                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
-            }
-            return null;
-        });
-        Image image = new Image(resource, "Image");
-        image.addClassNames("fit-c");
+        Image image = getImage();
 
         Div downPartDiv = new Div();
 
@@ -191,8 +121,23 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
         return imageDiv;
     }
 
+    private @NotNull Image getImage() {
+        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+
+        StreamResource resource = new StreamResource("image.jpg", () -> {
+            try {
+                return new FileInputStream(scr);
+            } catch (FileNotFoundException e) {
+                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+            }
+            return null;
+        });
+        Image image = new Image(resource, "Image");
+        image.addClassNames("fit-c");
+        return image;
+    }
+
     public Div reviewsDiv() {
-//        Restaurant rest = Convertor.convertToEntity(restaurantService.findByRestaurantId(restaurantId));
         reviewDiv = new Div();
         reviewDiv.addClassNames("review-div");
 
@@ -202,13 +147,11 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
         reviewDiv.add(inputReview);
 
         Div listOfReviews = new Div();
+        listOfReviews.addClassNames("review-list-div");
+
         MessageList list = getMessageList();
 
         listOfReviews.add(list);
-
-        listOfReviews.getStyle().set("max-height", "300px");
-        listOfReviews.getStyle().set("overflow-y", "auto");
-
         reviewDiv.add(listOfReviews);
         return reviewDiv;
     }

@@ -1,6 +1,4 @@
 .basic{
-    /*padding: 2px;*/
-    /*margin: 1px;*/
     display: flex;
     justify-content: center;
 }
@@ -28,13 +26,11 @@
 
 .menu-div{
     width: 100%;
-    /*width: auto;*/
     display: inline-block;
 }
 
 .filters{
     width: 20%;
-    /*margin: 1px;*/
     padding-left: 1%;
     display: inline-block
 }
@@ -139,6 +135,11 @@ vaadin-checkbox{
     padding: 3%;
 }
 
+.review-list-div{
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 .restaurant-info-div *{
     padding-bottom: 10px;
 }
@@ -165,7 +166,6 @@ vaadin-checkbox{
     width: 80%;
     height: 50%;
     margin: 3%;
-    /*background: #2b908f;*/
 }
 
 .login-button{

@@ -10,6 +10,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.view.RestaurantInfoView;
@@ -40,17 +41,7 @@ public class RestaurantItem {
         Div imageContainer = new Div();
         imageContainer.addClassNames("d-flex justify-content-center");
 
-        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
-
-        StreamResource resource = new StreamResource("image.jpg", () -> {
-            try {
-                return new FileInputStream(scr);
-            } catch (FileNotFoundException e) {
-                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
-            }
-            return null;
-        });
-        Image image = new Image(resource, "Image");
+        Image image = getImage(restaurant);
 
         image.addClassNames("image");
         imageContainer.add(image);
@@ -77,17 +68,11 @@ public class RestaurantItem {
         } else {
             cuisineType = new Span("");
         }
+
         cuisineType.getStyle().setColor("#0074D9").setFontSize("smaller").setFontWeight(Style.FontWeight.BOLD);
         Div cuisineDiv = new Div(cuisineType);
-        Map<Integer, String> checkboxValues = new HashMap<>();
-        checkboxValues.put(4, "₴₴₴₴₴");
-        checkboxValues.put(3, "₴₴₴ - ₴₴₴₴");
-        checkboxValues.put(2, "₴₴ - ₴₴₴");
-        checkboxValues.put(1, "₴ - ₴₴");
-        checkboxValues.put(0, "₴");
-        Div priceDiv = new Div(new Span(checkboxValues.get(restaurant.getPriceLevel())));
+        Div priceDiv = getPriceDiv(restaurant);
         infoDiv.add(resNameDiv, cuisineDiv, priceDiv);
-
 
         Div rate = new Div();
         rate.addClassNames("info width-30");
@@ -99,5 +84,29 @@ public class RestaurantItem {
         info.add(infoDiv, rate);
         div.add(imageContainer, info);
         return div;
+    }
+
+    private static @NotNull Div getPriceDiv(RestaurantDTO restaurant) {
+        Map<Integer, String> checkboxValues = new HashMap<>();
+        checkboxValues.put(4, "₴₴₴₴₴");
+        checkboxValues.put(3, "₴₴₴ - ₴₴₴₴");
+        checkboxValues.put(2, "₴₴ - ₴₴₴");
+        checkboxValues.put(1, "₴ - ₴₴");
+        checkboxValues.put(0, "₴");
+        return new Div(new Span(checkboxValues.get(restaurant.getPriceLevel())));
+    }
+
+    private @NotNull Image getImage(RestaurantDTO restaurant) {
+        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+
+        StreamResource resource = new StreamResource("image.jpg", () -> {
+            try {
+                return new FileInputStream(scr);
+            } catch (FileNotFoundException e) {
+                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+            }
+            return null;
+        });
+        return new Image(resource, "Image");
     }
 }
