@@ -26,6 +26,8 @@ import ua.huryn.elasticsearch.entity.dto.IngredientDTO;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.repository.db.*;
+import ua.huryn.elasticsearch.service.DishService;
+import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
@@ -52,11 +54,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final IngredientDbRepository ingredientDbRepository;
     private final UserDbRepository userDbRepository;
     private final ReviewDbRepository reviewDbRepository;
+    private final DishService dishService;
     private final GeneralProperties generalProperties;
     private final ElasticsearchOperations elasticsearchOperations;
     private final String localDirectory;
 
-    public RestaurantServiceImpl(RestaurantDbRepository restaurantDbRepository, DishDbRepository dishDbRepository, CategoryDbRepository categoryDbRepository, RestaurantInfoEnDbRepository restaurantInfoEnDbRepository, IngredientDbRepository ingredientDbRepository, UserDbRepository userDbRepository, ReviewDbRepository reviewDbRepository, GeneralProperties generalProperties, ElasticsearchOperations elasticsearchOperations) {
+    public RestaurantServiceImpl(RestaurantDbRepository restaurantDbRepository, DishDbRepository dishDbRepository, CategoryDbRepository categoryDbRepository, RestaurantInfoEnDbRepository restaurantInfoEnDbRepository, IngredientDbRepository ingredientDbRepository, UserDbRepository userDbRepository, ReviewDbRepository reviewDbRepository, DishService dishService, GeneralProperties generalProperties, ElasticsearchOperations elasticsearchOperations) {
         this.dishDbRepository = dishDbRepository;
         this.restaurantDbRepository = restaurantDbRepository;
         this.categoryDbRepository = categoryDbRepository;
@@ -64,6 +67,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         this.ingredientDbRepository = ingredientDbRepository;
         this.userDbRepository = userDbRepository;
         this.reviewDbRepository = reviewDbRepository;
+        this.dishService = dishService;
         this.generalProperties = generalProperties;
         localDirectory=generalProperties.getLocalDirectory();
         this.elasticsearchOperations = elasticsearchOperations;
@@ -340,6 +344,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             for (String dish: dishes){
                 for(RestaurantDTO restaurantModel: filteredData) {
                     List<Dish> dishesListByRestaurantId = dishDbRepository.findByRestaurantId(restaurantModel.getRestaurantId());
+                    for (Dish dishModel: dishesListByRestaurantId){
+                        dishService.setAllDishListsData(dishModel);
+                    }
                     List<DishDTO> restaurantDishes = Convertor.convertDishEntityListToDTO(dishesListByRestaurantId);
                     for (DishDTO dishDTO : restaurantDishes) {
                         if (dishDTO.getName().equals(dish)) {

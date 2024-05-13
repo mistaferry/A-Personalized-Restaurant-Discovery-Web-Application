@@ -239,17 +239,13 @@ public class Filters {
         dishesCheckbox.addValueChangeListener(event -> {
             selectedDishes.clear();
             selectedDishes.addAll(event.getValue());
-//            List<String> sortedItems = new ArrayList<>(dishesCheckbox.getListDataView().getItems().toList());
-//            sortedItems.sort(Comparator.comparingInt(item -> selectedDishes.contains(item) ? 0 : 1));
-//            dishesCheckbox = new CheckboxGroup<>();
-//            dishesCheckbox.setItems(sortedItems);
             dishesCheckbox.setValue(selectedDishes);
         });
     }
 
     private Div createIngredientsFilter() {
         Div ingredientsDiv = new Div();
-        ingredientsDiv.addClassNames("main-div");
+        ingredientsDiv.getStyle().setPaddingTop("20px");
 
         Div ingredientsContainer = new Div();
         ingredientsContainer.addClassNames("d-flex flex-wrap justify-content-between");
@@ -260,6 +256,7 @@ public class Filters {
         List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(checkboxValues.values().toArray(new String[0]), 1, 4));
         partOfIngredientCheckbox.setLabel("Інгредієнти");
         partOfIngredientCheckbox.setItems(partOfValues);
+        partOfIngredientCheckbox.addClassNames("custom-checkbox");
         ingredientsContainer.add(partOfIngredientCheckbox);
         ingredientsDiv.add(ingredientsContainer);
 

@@ -110,6 +110,10 @@
     --vaadin-checkbox-checkmark-char: --lumo-icons-cross;
 }
 
+vaadin-checkbox{
+    width: 100%;
+}
+
 .restaurant-page-info-div{
     display: flex;
     flex-direction: column;
