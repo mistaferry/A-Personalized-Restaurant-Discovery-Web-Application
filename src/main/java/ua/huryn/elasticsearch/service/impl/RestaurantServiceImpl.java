@@ -79,6 +79,9 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         for (double i = startRating; i <= endRating; i += 0.1) {
             List<Restaurant> restaurantList = restaurantDbRepository.findByRating(i);
+            for (Restaurant restaurant : restaurantList) {
+                setAllRestaurantListsData(restaurant);
+            }
             ratingList.addAll(Convertor.convertRestaurantEntityListToDTO(restaurantList));
         }
         return ratingList;
@@ -236,6 +239,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch) {
         List<RestaurantDTO> filteredData = getAll();
 
+        log.info("cuisine types - {}", cuisineTypes);
+        log.info("rating - {}", rating);
+        log.info("price - {}", price);
+        log.info("routes - {}", routes);
+        log.info("dishes - {}", dishes);
+        log.info("ingredients - {}", ingredients);
         filteredData = getRestaurantsDTOBySearchString(fullTextSearch, filteredData);
         filteredData = filteredByCuisineType(cuisineTypes, filteredData);
         filteredData = filteredByRating(rating, filteredData);
@@ -244,7 +253,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         filteredData = filteredByDishes(dishes, filteredData);
         filteredData = filteredByIngredients(ingredients, filteredData);
 
-//        log.debug("filtered size - " + filteredData.size());
+        log.info("filtered size - " + filteredData.size());
         return filteredData;
     }
 

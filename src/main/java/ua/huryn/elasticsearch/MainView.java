@@ -15,7 +15,6 @@ import com.vaadin.flow.component.sidenav.SideNavItem;
 import java.awt.*;
 
 public class MainView extends AppLayout {
-    private static final String OAUTH_URL = "/oauth2/authorization/google";
 
     public MainView() {
         createHeader();
@@ -25,14 +24,5 @@ public class MainView extends AppLayout {
         H1 logo = new H1("Diploma Huryn");
         var header = new HorizontalLayout(new DrawerToggle(), logo);
         addToNavbar(header);
-    }
-
-    private SideNav getSideNav() {
-        SideNav sideNav = new SideNav();
-        sideNav.addItem(
-                new SideNavItem("Menu", "/",
-                        VaadinIcon.SEARCH.create()),
-                new SideNavItem("Log in", OAUTH_URL, VaadinIcon.USER.create()));
-        return sideNav;
     }
 }

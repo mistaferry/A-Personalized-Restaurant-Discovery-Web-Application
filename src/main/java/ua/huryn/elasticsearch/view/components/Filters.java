@@ -75,9 +75,6 @@ public class Filters {
 
     private Div createCuisineFilter() {
         List<String> cuisineTypes = restaurantService.getCuisineType();
-        List<String> cuisineTypesLabels = cuisineTypes.stream()
-                .map(cuisine -> cuisine + " кухня")
-                .toList();
 
         Div cuisineTypeDiv = new Div();
         cuisineTypeDiv.addClassNames("main-div");
@@ -86,7 +83,7 @@ public class Filters {
         cuisineTypesContainer.addClassNames("d-flex flex-wrap justify-content-between");
 
         cuisineCheckbox.setLabel("Кухня");
-        cuisineCheckbox.setItems(cuisineTypesLabels);
+        cuisineCheckbox.setItems(cuisineTypes);
         cuisineCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
         cuisineTypesContainer.add(cuisineCheckbox);
         cuisineTypeDiv.add(cuisineTypesContainer);
