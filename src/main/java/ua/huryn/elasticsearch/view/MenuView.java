@@ -49,7 +49,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final GeneralProperties generalProperties;
     private final UserDbRepository userDbRepository;
     private int currentPage = 0;
-    private int pageSize = 10;
+    private int pageSize = 20;
 
     private final Button fullTextButton = new Button();
     TextField routesDeparturePoint;
@@ -193,6 +193,9 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
+        String routeDeparturePointValue = routesDeparturePoint.getValue();
+        String fullTextSearch = fullTextSearchField.getValue();
+        String keyWords = reviewKeywordsInput.getValue();
 
         List<String> prices = new ArrayList<>();
         for (int i = 0; i < selectedPrices.size(); i++) {
@@ -213,9 +216,10 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         String routesQuery = String.join(",", routes);
         String dishesQuery = String.join(",", selectedDishes);
         String ingredientsQuery = String.join(",", selectedIngredients);
-        // Create the query parameter for cuisines and price
+
         String query = "route=" + routesQuery +
-                "&price=" + priceQuery + "&rating=" + ratingQuery + "&cuisine=" + cuisinesQuery + "&dish=" + dishesQuery + "&ingredient=" + ingredientsQuery;
+                "&price=" + priceQuery + "&rating=" + ratingQuery + "&cuisine=" + cuisinesQuery + "&dish=" + dishesQuery + "&ingredient=" + ingredientsQuery +
+                "&departurePoint=" + routeDeparturePointValue + "&text=" + fullTextSearch + "&keywords=" + keyWords;
         JsonObject stateData = Json.createObject();
 
         UI.getCurrent().getPage().getHistory().replaceState(stateData, "?" + query);
@@ -266,6 +270,27 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         Set<String> ingredientSet = getStringSetFromQueryParameters(queryParameters, "ingredient");
         if (!ingredientSet.isEmpty()) {
             filters.getIngredientsCheckbox().setValue(ingredientSet);
+        }
+
+        String routeDeparturePointValue = getStringSetFromQueryParameters(queryParameters, "departurePoint").toString();
+        if (routesDeparturePoint.isEmpty()){
+            routesDeparturePoint.setValue("");
+        }else {
+            routesDeparturePoint.setValue(routeDeparturePointValue);
+        }
+        String fullTextSearch = getStringSetFromQueryParameters(queryParameters, "text").toString();
+        if (fullTextSearchField.isEmpty()){
+            fullTextSearchField.setValue("");
+        }else {
+            fullTextSearchField.setValue(fullTextSearch);
+        }
+        String keyWords = getStringSetFromQueryParameters(queryParameters, "keywords").toString();
+        if (reviewKeywordsInput.isEmpty()){
+//            TextField textField = new TextField();
+//            textField.setValue(keyWords);
+//            filters.setReviewKeywordInput(textField);
+        }else {
+            reviewKeywordsInput.setValue(keyWords);
         }
     }
 

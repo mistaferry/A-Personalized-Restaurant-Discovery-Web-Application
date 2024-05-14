@@ -115,7 +115,8 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
         }
 
         Div address = new Div(new Span(restaurant.getAddress()));
-        Div rating = new Div(new Span("Рейтинг - " + restaurant.getRating() + " ⭐"));
+        long ratingValue = Math.round(restaurant.getRating());
+        Div rating = new Div(new Span("Рейтинг - ⭐" + ratingValue));
         restaurantData.add(address, rating);
 
         downPartDiv.add(restaurantData);
@@ -179,7 +180,6 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
 
     void inputMessageListener(){
         input.addSubmitListener(submitEvent -> {
-            log.info("submit");
             MessageListItem newMessage = new MessageListItem(
                     submitEvent.getValue(), Instant.now(), user.getUsername());
             Review review = new Review();

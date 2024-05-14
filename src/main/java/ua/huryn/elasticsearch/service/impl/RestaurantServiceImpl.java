@@ -254,10 +254,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         log.info("routes - {}", routes);
         log.info("dishes - {}", dishes);
         log.info("ingredients - {}", ingredients);
+        filteredData = filteredByRating(rating, filteredData);
         filteredData = getRestaurantsDTOBySearchInEngAndUkr(fullTextSearch, filteredData);
         filteredData = getRestaurantsByReviewKeywords(keywords, filteredData);
         filteredData = filteredByCuisineType(cuisineTypes, filteredData);
-        filteredData = filteredByRating(rating, filteredData);
         filteredData = filteredByPriceLevel(price, filteredData);
         filteredData = getRestaurantInGivenDistance(routeDeparturePoint, routes, filteredData);
         filteredData = filteredByDishes(dishes, filteredData);

@@ -6,10 +6,8 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.messages.MessageInput;
-import com.vaadin.flow.component.messages.MessageInputI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import lombok.Getter;
@@ -19,7 +17,6 @@ import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import com.vaadin.flow.component.textfield.TextField;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -75,9 +72,23 @@ public class Filters {
     public Div createFiltersDiv() {
         Div filtersDiv = new Div();
         filtersDiv.addClassNames("filters");
-        filtersDiv.add(createCuisineFilter(), createRatingFilter(), createRouteFilter(), createPriceFilter(), createDishesFilter(), createIngredientsFilter(), createReviewFilter());
+        filtersDiv.add(addMapComponent(), createCuisineFilter(), createRatingFilter(), createRouteFilter(), createPriceFilter(), createDishesFilter(), createIngredientsFilter(), createReviewFilter());
 
         return filtersDiv;
+    }
+
+    private Div addMapComponent() {
+        Div cuisineTypeDiv = new Div();
+
+        Button button = new Button("Переглянути карту");
+        button.setWidth("100%");
+        Anchor anchor = new Anchor("http://maps.googleapis.com/maps/api/js?v=3.exp&callback=initialize", "Текст, який відображатиметься на посиланні");
+        anchor.setTarget("_blank");
+        button.addClickListener(event -> {
+            anchor.getElement().callJsFunction("click");
+        });
+
+        return cuisineTypeDiv;
     }
 
     private Div createCuisineFilter() {
