@@ -80,20 +80,14 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantDTO> findByRating(double rating) {
-        List<RestaurantDTO> ratingList = new ArrayList<>();
 
         double[] ratingRange = calculateRatingRange(rating);
         double startRating = ratingRange[0];
         double endRating = ratingRange[1];
 
-        for (double i = startRating; i <= endRating; i += 0.1) {
-            List<Restaurant> restaurantList = restaurantDbRepository.findByRating(i);
-            for (Restaurant restaurant : restaurantList) {
-                setAllRestaurantListsData(restaurant);
-            }
-            ratingList.addAll(Convertor.convertRestaurantEntityListToDTO(restaurantList));
-        }
-        return ratingList;
+        List<Restaurant> restaurantList = restaurantDbRepository.findByRating(startRating, endRating);
+
+        return Convertor.convertRestaurantEntityListToDTO(restaurantList);
     }
 
     private double[] calculateRatingRange(double rating) {

@@ -228,13 +228,14 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     public List<RestaurantDTO> getFilteredRestaurantModelList() {
         List<String> selectedCuisine = filters.getCuisineCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedPrices = filters.getPriceLevelCheckbox().getSelectedItems().stream().toList();
-        List<Integer> selectedRating = filters.getRatingCheckbox().getSelectedItems().stream().toList();
+        List<Integer> selectedRating = new ArrayList<>(filters.getRatingCheckbox().getSelectedItems().stream().toList());
         List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
         String routeDeparturePointValue = routesDeparturePoint.getValue();
         String fullTextSearch = fullTextSearchField.getValue();
         String keyWords = reviewKeywordsInput.getValue();
+
         return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch, keyWords);
     }
 

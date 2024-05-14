@@ -15,11 +15,13 @@ import java.util.Optional;
 @Repository
 public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer> {
     Restaurant findById(Long id);
+
     List<Restaurant> findByName(String name);
 
     Restaurant findByPlaceId(String placeId);
 
-    List<Restaurant> findByRating(double rating);
+    @Query(nativeQuery = true, value = "SELECT * FROM restaurant WHERE rating>=:start and rating<=:end")
+    List<Restaurant> findByRating(@Param("start")double start, @Param("end")double end);
 
     List<Restaurant> findByLatitudeAndLongitude(double latitude, double longitude);
 
