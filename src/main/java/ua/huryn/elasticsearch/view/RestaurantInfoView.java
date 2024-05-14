@@ -21,6 +21,7 @@ import ua.huryn.elasticsearch.entity.db.Review;
 import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.dto.ReviewDTO;
+import ua.huryn.elasticsearch.repository.db.ReviewDbRepository;
 import ua.huryn.elasticsearch.repository.db.UserDbRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.service.ReviewService;
@@ -38,6 +39,7 @@ import static org.reflections.Reflections.log;
 @Route(value = "restaurant", layout = MainView.class)
 @PermitAll
 public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
+    private final ReviewDbRepository reviewDbRepository;
     private Long restaurantId;
     private RestaurantDTO restaurant;
     private final RestaurantService restaurantService;
@@ -49,7 +51,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     private Div reviewDiv;
     private MessageInput input;
 
-    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository, GeneralProperties generalProperties) {
+    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository, GeneralProperties generalProperties, ReviewDbRepository reviewDbRepository) {
         this.restaurantService = restaurantService;
         this.reviewService = reviewService;
         this.userDbRepository = userDbRepository;
@@ -58,6 +60,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
         this.generalProperties = generalProperties;
         this.localDirectory=generalProperties.getLocalDirectory();
         inputMessageListener();
+        this.reviewDbRepository = reviewDbRepository;
     }
 
     @Override
@@ -176,6 +179,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
 
     void inputMessageListener(){
         input.addSubmitListener(submitEvent -> {
+            log.info("submit");
             MessageListItem newMessage = new MessageListItem(
                     submitEvent.getValue(), Instant.now(), user.getUsername());
             Review review = new Review();
@@ -183,7 +187,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
             review.setRestaurant(Convertor.convertToEntity(restaurant));
             review.setTime(Timestamp.from(newMessage.getTime()));
             review.setUser(user);
-            reviewService.saveToDb(review);
+            reviewDbRepository.save(review);
             removeAll();
             add(pageDiv());
         });

@@ -1,32 +1,25 @@
 package ua.huryn.elasticsearch.controller;
 
-import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
-import ua.huryn.elasticsearch.entity.model.RestaurantModel;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/restaurants")
-@PermitAll
 @RequiredArgsConstructor
 public class RestaurantController {
     private final RestaurantService restaurantService;
 
     @GetMapping("/search")
-    @PermitAll
+    @AnonymousAllowed
     public List<RestaurantDTO> searchRestaurants(
             @RequestParam("string") String string
     ) {
-        List<RestaurantDTO> restaurants = restaurantService.getRestaurantsDTOBySearchString(string, null);
+        List<RestaurantDTO> restaurants = restaurantService.getRestaurantsDTOBySearchInEngAndUkr(string, null);
         System.out.println("Found restaurants: " + restaurants.size());
         return restaurants;
     }

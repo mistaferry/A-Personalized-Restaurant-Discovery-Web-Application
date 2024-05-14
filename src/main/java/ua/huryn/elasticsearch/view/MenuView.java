@@ -53,7 +53,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 
     private final Button fullTextButton = new Button();
     TextField routesDeparturePoint;
-    TextField fullTextSearchField = new TextField();
+    TextField fullTextSearchField;
     Div menuDiv;
     private Button reviewKeywordsButton;
     private TextField reviewKeywordsInput;
@@ -70,12 +70,16 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         this.reviewKeywordsButton = filters.getReviewSearchButton();
         this.reviewKeywordsInput = filters.getReviewKeywordInput();
         this.routesDeparturePoint = new TextField();
-
+        this.fullTextSearchField = new TextField();
         addAuthUserToDb();
 
         addListeners(this::updateMenu);
 
         fullTextButton.addClickListener(event -> {
+            updateMenu();
+        });
+
+        reviewKeywordsButton.addClickListener(event -> {
             updateMenu();
         });
 
@@ -226,7 +230,8 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
         String routeDeparturePointValue = routesDeparturePoint.getValue();
         String fullTextSearch = fullTextSearchField.getValue();
-        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch);
+        String keyWords = reviewKeywordsInput.getValue();
+        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch, keyWords);
     }
 
     @Override

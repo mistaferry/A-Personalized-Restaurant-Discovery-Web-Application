@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
-import java.util.Arrays;
-
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -22,7 +20,7 @@ public class DbOperationRunner implements CommandLineRunner {
             try {
                 log.info("Start adding data from Google");
                 log.debug("Add data to database");
-                restaurantService.addDataToDb();
+//                restaurantService.addDataToDb();
                 log.debug("Add data to file");
                 restaurantService.addApiDataToFile();
                 log.info("Data from Google was added");

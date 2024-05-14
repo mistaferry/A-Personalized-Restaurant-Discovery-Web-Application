@@ -17,6 +17,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.config.GeneralProperties;
@@ -24,10 +25,12 @@ import ua.huryn.elasticsearch.entity.db.*;
 import ua.huryn.elasticsearch.entity.dto.DishDTO;
 import ua.huryn.elasticsearch.entity.dto.IngredientDTO;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.entity.dto.ReviewDTO;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
+import ua.huryn.elasticsearch.entity.model.ReviewModel;
 import ua.huryn.elasticsearch.repository.db.*;
+import ua.huryn.elasticsearch.repository.elasticsearch.RestaurantRepository;
 import ua.huryn.elasticsearch.service.DishService;
-import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.utils.Convertor;
 
@@ -55,11 +58,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final UserDbRepository userDbRepository;
     private final ReviewDbRepository reviewDbRepository;
     private final DishService dishService;
+    private final RestaurantRepository restaurantRepository;
     private final GeneralProperties generalProperties;
     private final ElasticsearchOperations elasticsearchOperations;
     private final String localDirectory;
 
-    public RestaurantServiceImpl(RestaurantDbRepository restaurantDbRepository, DishDbRepository dishDbRepository, CategoryDbRepository categoryDbRepository, RestaurantInfoEnDbRepository restaurantInfoEnDbRepository, IngredientDbRepository ingredientDbRepository, UserDbRepository userDbRepository, ReviewDbRepository reviewDbRepository, DishService dishService, GeneralProperties generalProperties, ElasticsearchOperations elasticsearchOperations) {
+    public RestaurantServiceImpl(RestaurantDbRepository restaurantDbRepository, DishDbRepository dishDbRepository, CategoryDbRepository categoryDbRepository, RestaurantInfoEnDbRepository restaurantInfoEnDbRepository, IngredientDbRepository ingredientDbRepository, UserDbRepository userDbRepository, ReviewDbRepository reviewDbRepository, DishService dishService, RestaurantRepository restaurantRepository, GeneralProperties generalProperties, ElasticsearchOperations elasticsearchOperations) {
         this.dishDbRepository = dishDbRepository;
         this.restaurantDbRepository = restaurantDbRepository;
         this.categoryDbRepository = categoryDbRepository;
@@ -68,6 +72,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         this.userDbRepository = userDbRepository;
         this.reviewDbRepository = reviewDbRepository;
         this.dishService = dishService;
+        this.restaurantRepository = restaurantRepository;
         this.generalProperties = generalProperties;
         localDirectory=generalProperties.getLocalDirectory();
         this.elasticsearchOperations = elasticsearchOperations;
@@ -240,7 +245,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch) {
+    public List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch, String keywords) {
         List<RestaurantDTO> filteredData = getAll();
 
         log.info("cuisine types - {}", cuisineTypes);
@@ -249,7 +254,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         log.info("routes - {}", routes);
         log.info("dishes - {}", dishes);
         log.info("ingredients - {}", ingredients);
-        filteredData = getRestaurantsDTOBySearchString(fullTextSearch, filteredData);
+        filteredData = getRestaurantsDTOBySearchInEngAndUkr(fullTextSearch, filteredData);
+        filteredData = getRestaurantsByReviewKeywords(keywords, filteredData);
         filteredData = filteredByCuisineType(cuisineTypes, filteredData);
         filteredData = filteredByRating(rating, filteredData);
         filteredData = filteredByPriceLevel(price, filteredData);
@@ -682,8 +688,22 @@ public class RestaurantServiceImpl implements RestaurantService {
                         categoryDbRepository.save(category);
                     }
                 }
+                List<Dish> dishes = restaurant.getDishes();
+                for(Dish dish : dishes){
+                    Dish existsDish = dishDbRepository.findById(dish.getId()).orElse(null);
+                    if(existsDish == null){
+                        List<Ingredient> ingredients = dish.getIngredients();
+                        for(Ingredient ingredient : ingredients){
+                            Ingredient existsIngredient = ingredientDbRepository.findById(ingredient.getId()).orElse(null);
+                            if(existsIngredient == null){
+                                ingredientDbRepository.save(ingredient);
+                            }
+                        }
+                        dish.setIngredients(ingredients);
+                        dishDbRepository.save(dish);
+                    }
+                }
             }
-
             restaurantDbRepository.saveAll(restaurants);
             log.info("Data was added from file");
         } catch (IOException e) {
@@ -693,37 +713,87 @@ public class RestaurantServiceImpl implements RestaurantService {
 
 
     @Override
-    public List<RestaurantModel> findRestaurantsBySearchString(List<String> parts) {
-        try {
+    public List<ReviewModel> searchByReviewKeywords(List<String> parts) {
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        if (parts != null && !parts.isEmpty()) {
             for (String part : parts) {
-                boolQuery.must(QueryBuilders.wildcardQuery("search_string_ukr", "*" + part + "*"));
+                if (!part.isBlank()) {
+                    boolQuery.must(QueryBuilders.matchQuery("text", part));
+                }
             }
-
-            String queryString = boolQuery.toString();
-            StringQuery stringQuery = new StringQuery(queryString);
-
-            SearchHits<RestaurantModel> searchHits = elasticsearchOperations.search(
-                    stringQuery, RestaurantModel.class);
-
-            return searchHits.stream()
-                    .map(SearchHit::getContent)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("Error during search: " + e.getMessage());
         }
-        return null;
+
+        String queryString = boolQuery.toString();
+        StringQuery stringQuery = new StringQuery(queryString);
+
+        SearchHits<ReviewModel> searchHits = elasticsearchOperations.search(
+                stringQuery, ReviewModel.class);
+
+        return searchHits.stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+
+    }
+
+    public List<RestaurantDTO> getRestaurantsByReviewKeywords(String keywords, List<RestaurantDTO> filteredData){
+        if(keywords != null && !keywords.isBlank()){
+            List<RestaurantDTO> foundRestaurants = new ArrayList<>();
+            List<ReviewDTO> foundReviews = getReviewsDTOByKeywords(keywords);
+            for(ReviewDTO review: foundReviews){
+                foundRestaurants.add(review.getRestaurantDTO());
+            }
+            List<RestaurantDTO> result = new ArrayList<>();
+
+            for (RestaurantDTO restaurantDTO: foundRestaurants){
+                if(filteredData.contains(restaurantDTO)){
+                    result.add(restaurantDTO);
+                }
+            }
+            return result;
+        }
+        return filteredData;
     }
 
     @Override
-    public List<RestaurantDTO> getRestaurantsDTOBySearchString(String searchString, List<RestaurantDTO> restaurantList){
+    public List<ReviewDTO> getReviewsDTOByKeywords(String searchString){
+        searchString = searchString.toLowerCase();
+        String[] words = searchString.split("\\s+");
+        List<String> wordList = Arrays.asList(words);
+
+        java.util.List<ReviewModel> list = searchByReviewKeywords(wordList);
+        List<Review> entityList = new ArrayList<>();
+        for (ReviewModel reviewModel : list) {
+            entityList.add(reviewDbRepository.findById(reviewModel.getReviewId()).orElse(null));
+        }
+        return Convertor.convertReviewEntityListToDTO(entityList);
+    }
+
+    @Override
+    public List<RestaurantModel> fullTextSearchInEngAndUkr(String text) {
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+            .should(QueryBuilders.matchQuery("search_string_ukr", text))
+                    .should(QueryBuilders.matchQuery("search_string_eng", text));
+
+
+        String queryString = boolQuery.toString();
+        StringQuery stringQuery = new StringQuery(queryString);
+
+        SearchHits<RestaurantModel> searchHits = elasticsearchOperations.search(
+                stringQuery, RestaurantModel.class);
+
+        return searchHits.stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<RestaurantDTO> getRestaurantsDTOBySearchInEngAndUkr(String searchString, List<RestaurantDTO> restaurantList){
         if(searchString != null && !searchString.isBlank()){
             searchString = searchString.toLowerCase();
-            String[] words = searchString.split("\\s+");
-            List<String> wordList = Arrays.asList(words);
 
-            List<RestaurantModel> list = findRestaurantsBySearchString(wordList);
+            java.util.List<RestaurantModel> list = fullTextSearchInEngAndUkr(searchString);
             List<Restaurant> entityList = new ArrayList<>();
             for (RestaurantModel restaurantModel : list) {
                 entityList.add(restaurantDbRepository.findById(restaurantModel.getRestaurantId()));

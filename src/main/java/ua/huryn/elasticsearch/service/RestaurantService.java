@@ -3,12 +3,13 @@ package ua.huryn.elasticsearch.service;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import com.google.maps.errors.ApiException;
 import ua.huryn.elasticsearch.entity.db.Restaurant;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.entity.dto.ReviewDTO;
 import ua.huryn.elasticsearch.entity.model.RestaurantModel;
+import ua.huryn.elasticsearch.entity.model.ReviewModel;
 
 public interface RestaurantService {
     RestaurantDTO findByRestaurantId(Long id);
@@ -27,7 +28,7 @@ public interface RestaurantService {
 
     List<RestaurantDTO> getAll();
 
-    List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch);
+    List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch, String keywords);
 
     List<RestaurantDTO> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantDTO> filtered);
 
@@ -35,9 +36,13 @@ public interface RestaurantService {
 
     List<String> getCuisineType();
 
-    List<RestaurantModel> findRestaurantsBySearchString(List<String> parts);
+    List<ReviewModel> searchByReviewKeywords(List<String> parts);
 
-    List<RestaurantDTO> getRestaurantsDTOBySearchString(String searchString, List<RestaurantDTO> restaurantList);
+    List<RestaurantDTO> getRestaurantsDTOBySearchInEngAndUkr(String searchString, List<RestaurantDTO> restaurantList);
+
+    List<RestaurantModel> fullTextSearchInEngAndUkr(String text);
+
+    List<ReviewDTO> getReviewsDTOByKeywords(String searchString);
 
     void addDataToDb() throws IOException, InterruptedException, ApiException;
 
