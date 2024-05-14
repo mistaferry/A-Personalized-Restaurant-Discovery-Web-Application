@@ -25,13 +25,18 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
 
     List<Restaurant> findByLatitudeAndLongitude(double latitude, double longitude);
 
+    @Query(nativeQuery = true, value = "SELECT r.*\n" +
+            "    from restaurant r\n" +
+            "    right join db.restaurant_dish rd on r.restaurant_id = rd.restaurant_id\n" +
+            "    right join db.dish d on d.dish_id = rd.dish_id\n" +
+            "    where d.name =:dish_name")
+    List<Restaurant> findByDishName(@Param("dish_name") String dishName);
+
     List<Restaurant> findByPriceLevel(int priceLevel);
 
     List<Restaurant> findByCuisineType(String cuisineType);
 
     List<Restaurant> findByRatingAndPriceLevel(double rating, int priceLevel);
-
-
 
     @Query(nativeQuery = true, value = "SELECT r.restaurant_id\n" +
             "    FROM review r\n" +

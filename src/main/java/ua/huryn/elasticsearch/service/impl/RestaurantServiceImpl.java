@@ -40,8 +40,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -257,6 +256,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         filteredData = filteredByDishes(dishes, filteredData);
         filteredData = filteredByIngredients(ingredients, filteredData);
 
+        log.info("{}",filteredData);
         log.info("filtered size - " + filteredData.size());
         return filteredData;
     }
@@ -341,17 +341,15 @@ public class RestaurantServiceImpl implements RestaurantService {
     private List<RestaurantDTO> filteredByDishes(List<String> dishes, List<RestaurantDTO> filteredData){
         if(dishes != null && !dishes.isEmpty()){
             List<RestaurantDTO> filtered = new ArrayList<>();
-            for (String dish: dishes){
-                for(RestaurantDTO restaurantModel: filteredData) {
-                    List<Dish> dishesListByRestaurantId = dishDbRepository.findByRestaurantId(restaurantModel.getRestaurantId());
-                    for (Dish dishModel: dishesListByRestaurantId){
-                        dishService.setAllDishListsData(dishModel);
-                    }
-                    List<DishDTO> restaurantDishes = Convertor.convertDishEntityListToDTO(dishesListByRestaurantId);
-                    for (DishDTO dishDTO : restaurantDishes) {
-                        if (dishDTO.getName().equals(dish)) {
-                            filtered.add(restaurantModel);
-                        }
+            Set<Long> addedRestaurantIds = new HashSet<>();
+
+            for (String dish : dishes) {
+                List<Restaurant> restaurantsByDish = restaurantDbRepository.findByDishName(dish);
+                for (Restaurant restaurant : restaurantsByDish) {
+                    Long restaurantId = restaurant.getId();
+                    if (!addedRestaurantIds.contains(restaurantId)) {
+                        filtered.add(Convertor.convertToDTO(restaurant));
+                        addedRestaurantIds.add(restaurantId);
                     }
                 }
             }
