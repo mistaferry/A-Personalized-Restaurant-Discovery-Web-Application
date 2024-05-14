@@ -97,12 +97,16 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
 
         Div restaurantName = new Div(new Span(restaurant.getName()));
         restaurantName.getStyle().setFontSize("24px");
+        restaurantData.add(restaurantName);
 
-        String cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
-        Div cuisineType = new Div(new Span(cuisine + " кухня"));
-        cuisineType.getStyle().setColor("#003399");
+        String cuisine = restaurant.getCuisineType();
+        if(cuisine != null && !cuisine.isEmpty()) {
+            cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
+            Div cuisineType = new Div(new Span(cuisine + " кухня"));
+            cuisineType.getStyle().setColor("#003399");
+            restaurantData.add(cuisineType);
+        }
 
-        restaurantData.add(restaurantName, cuisineType);
 
         String restaurantWebsite = restaurant.getWebsite();
         if (restaurantWebsite != null && !restaurantWebsite.equals("null")) {

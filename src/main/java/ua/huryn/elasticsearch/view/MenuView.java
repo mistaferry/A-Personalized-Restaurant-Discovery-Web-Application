@@ -272,26 +272,29 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
             filters.getIngredientsCheckbox().setValue(ingredientSet);
         }
 
-        String routeDeparturePointValue = getStringSetFromQueryParameters(queryParameters, "departurePoint").toString();
-        if (routesDeparturePoint.isEmpty()){
-            routesDeparturePoint.setValue("");
+        Set<String> routeDeparturePointValue = getStringSetFromQueryParameters(queryParameters, "departurePoint");
+        if (routeDeparturePointValue.isEmpty()){
+            filters.getRoutesDeparturePoint().setValue("");
         }else {
-            routesDeparturePoint.setValue(routeDeparturePointValue);
+            String value = String.join(" ", routeDeparturePointValue);
+            filters.getRoutesDeparturePoint().setValue(value);
         }
-        String fullTextSearch = getStringSetFromQueryParameters(queryParameters, "text").toString();
-        if (fullTextSearchField.isEmpty()){
+        Set<String> fullTextSearch = getStringSetFromQueryParameters(queryParameters, "text");
+        if (fullTextSearch.isEmpty()){
             fullTextSearchField.setValue("");
         }else {
-            fullTextSearchField.setValue(fullTextSearch);
+            String value = String.join(" ", fullTextSearch);
+            fullTextSearchField.setValue(value);
         }
-        String keyWords = getStringSetFromQueryParameters(queryParameters, "keywords").toString();
-        if (reviewKeywordsInput.isEmpty()){
-//            TextField textField = new TextField();
-//            textField.setValue(keyWords);
-//            filters.setReviewKeywordInput(textField);
+        Set<String> keyWords = getStringSetFromQueryParameters(queryParameters, "keywords");
+        if (keyWords.isEmpty()){
+            filters.getReviewKeywordInput().setValue("");
         }else {
-            reviewKeywordsInput.setValue(keyWords);
+            String value = String.join(" ", keyWords);
+            filters.getReviewKeywordInput().setValue(value);
         }
+        reviewKeywordsButton.click();
+        fullTextButton.click();
     }
 
     void addAuthUserToDb(){

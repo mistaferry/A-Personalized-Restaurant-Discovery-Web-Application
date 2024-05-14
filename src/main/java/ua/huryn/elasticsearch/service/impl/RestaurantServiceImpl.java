@@ -559,9 +559,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
             String imagePath = "/db_data/restaurant_images/" + restaurantResult.placeId + "_image.jpg";
             String path = localDirectory + imagePath;
-            // create path if it doesn't exist
             Files.createDirectories(Paths.get(path).toAbsolutePath().getParent());
-            // Write the byte array to the file
             try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(imageData);
                 log.debug("Image saved to: {}", path);
@@ -774,7 +772,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
             .should(QueryBuilders.matchQuery("search_string_ukr", text))
                     .should(QueryBuilders.matchQuery("search_string_eng", text));
-
 
         String queryString = boolQuery.toString();
         StringQuery stringQuery = new StringQuery(queryString);

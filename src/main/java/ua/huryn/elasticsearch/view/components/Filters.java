@@ -82,6 +82,7 @@ public class Filters {
 
         Button button = new Button("Переглянути карту");
         button.setWidth("100%");
+        button.setHeight("60px");
         Anchor anchor = new Anchor("http://maps.googleapis.com/maps/api/js?v=3.exp&callback=initialize", "Текст, який відображатиметься на посиланні");
         anchor.setTarget("_blank");
         button.addClickListener(event -> {
