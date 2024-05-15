@@ -130,19 +130,31 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     }
 
     private @NotNull Image getImage() {
-        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+//        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+//
+//        StreamResource resource = new StreamResource("image.jpg", () -> {
+//            try {
+//                return new FileInputStream(scr);
+//            } catch (FileNotFoundException e) {
+//                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+//            }
+//            return null;
+//        });
+//        Image image = new Image(resource, "Image");
+//        image.addClassNames("fit-c");
+//        return image;
+        String imagePath = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
 
-        StreamResource resource = new StreamResource("image.jpg", () -> {
-            try {
-                return new FileInputStream(scr);
-            } catch (FileNotFoundException e) {
-                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
-            }
-            return null;
-        });
-        Image image = new Image(resource, "Image");
-        image.addClassNames("fit-c");
-        return image;
+        try {
+            FileInputStream fileInputStream = new FileInputStream(imagePath);
+            StreamResource resource = new StreamResource("image.jpg", () -> fileInputStream);
+            Image image = new Image(resource, "Image");
+            image.addClassNames("fit-c");
+            return image;
+        } catch (FileNotFoundException e) {
+            log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+            return new Image("https://t3.ftcdn.net/jpg/03/24/73/92/360_F_324739203_keeq8udvv0P2h1MLYJ0GLSlTBagoXS48.jpg", "Image");
+        }
     }
 
     public Div reviewsDiv() {

@@ -13,6 +13,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.view.RestaurantInfoView;
 
 import java.io.FileInputStream;
@@ -27,10 +28,12 @@ import static org.reflections.Reflections.log;
 public class RestaurantItem {
     private final String localDirectory;
     private final GeneralProperties generalProperties;
+//    private final RestaurantService restaurantService;
 
-    public RestaurantItem(GeneralProperties generalProperties) {
+    public RestaurantItem(GeneralProperties generalProperties/*, RestaurantService restaurantService*/) {
         this.generalProperties = generalProperties;
         this.localDirectory=generalProperties.getLocalDirectory();
+//        this.restaurantService = restaurantService;
     }
 
 

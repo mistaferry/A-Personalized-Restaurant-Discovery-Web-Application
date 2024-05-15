@@ -19,5 +19,4 @@ public interface IngredientDbRepository extends JpaRepository<Ingredient, Long> 
             "         join db.ingredient i on di.ingredient_id = i.ingredient_id\n" +
             "where d.dish_id = :dish_id")
     Optional<List<Ingredient>> findIngredientsByDishId(@Param("dish_id") Long dish_id);
-
 }

@@ -46,4 +46,13 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
     @EntityGraph(attributePaths = {"categories"})
     @Query("SELECT r FROM Restaurant r")
     List<Restaurant> getAll();
+
+    @Query(nativeQuery = true, value = "SELECT DISTINCT r.*\n" +
+            "FROM restaurant r\n" +
+            "         RIGHT JOIN db.restaurant_dish rd ON r.restaurant_id = rd.restaurant_id\n" +
+            "         RIGHT JOIN db.dish d ON d.dish_id = rd.dish_id\n" +
+            "         RIGHT JOIN db.dish_ingredient di ON d.dish_id = di.dish_id\n" +
+            "         RIGHT JOIN db.ingredient i ON i.ingredient_id = di.ingredient_id\n" +
+            "WHERE i.name =:ingredient_name")
+    Optional<List<Restaurant>> findRestaurantByIngredientName(@Param("ingredient_name") String ingredientName);
 }

@@ -256,7 +256,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         filteredData = filteredByDishes(dishes, filteredData);
         filteredData = filteredByIngredients(ingredients, filteredData);
 
-        log.info("{}",filteredData);
+//        log.info("{}",filteredData);
         log.info("filtered size - " + filteredData.size());
         return filteredData;
     }
@@ -362,28 +362,20 @@ public class RestaurantServiceImpl implements RestaurantService {
     private List<RestaurantDTO> filteredByIngredients(List<String> ingredients, List<RestaurantDTO> filteredData){
         if(ingredients != null && !ingredients.isEmpty()){
             List<RestaurantDTO> filtered = new ArrayList<>();
-            for (RestaurantDTO restaurantModel : filteredData) {
-                List<Dish> dishes = dishDbRepository.findByRestaurantId(restaurantModel.getRestaurantId());
-                boolean matches = true;
+            Set<Long> addedRestaurantIds = new HashSet<>();
 
-                for (Dish dish : dishes) {
-                    List<Ingredient> ingredientsListByDishId = ingredientDbRepository.findIngredientsByDishId(dish.getId()).get();
-                    List<IngredientDTO> ingredientsList = Convertor.convertIngredientEntityListToDTO(ingredientsListByDishId);
-
-                    for (IngredientDTO ingredientName : ingredientsList) {
-                        if (ingredients.contains(ingredientName.getName())) {
-                            matches = false;
-                            break;
-                        }
-                    }
-
-                    if (!matches) {
-                        break;
+            for (String ingredient : ingredients) {
+                List<Restaurant> restaurantsByDish = restaurantDbRepository.findRestaurantByIngredientName(ingredient).orElse(null);
+                if(restaurantsByDish != null){
+                    for (Restaurant restaurant: restaurantsByDish){
+                        addedRestaurantIds.add(restaurant.getId());
                     }
                 }
-
-                if (matches) {
-                    filtered.add(restaurantModel);
+            }
+//            log.info("set size - {}", addedRestaurantIds.size());
+            for (RestaurantDTO restaurantDTO : filteredData) {
+                if(!addedRestaurantIds.contains(restaurantDTO.getRestaurantId())){
+                    filtered.add(restaurantDTO);
                 }
             }
             return filtered;

@@ -45,6 +45,7 @@ public class Filters {
     private Runnable onSave;
     private Button reviewSearchButton;
     private TextField reviewKeywordInput;
+    private Button mapsButton;
 
 
     public Filters(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
@@ -63,6 +64,7 @@ public class Filters {
         this.partOfDishCheckbox = new CheckboxGroup<>();
         this.reviewSearchButton = new Button("Пошук");
         this.reviewKeywordInput = new TextField();
+        this.mapsButton = new Button("Переглянути карту");
 
         setupDishElementsListeners();
         setupIngredientElementsListeners();
@@ -79,15 +81,11 @@ public class Filters {
 
     private Div addMapComponent() {
         Div cuisineTypeDiv = new Div();
-
-        Button button = new Button("Переглянути карту");
-        button.setWidth("100%");
-        button.setHeight("60px");
-        Anchor anchor = new Anchor("http://maps.googleapis.com/maps/api/js?v=3.exp&callback=initialize", "Текст, який відображатиметься на посиланні");
+        cuisineTypeDiv.setWidth("100%");
+        cuisineTypeDiv.setHeight("60px");
+        Anchor anchor = new Anchor("https://www.google.com/maps", "Переглянути карту");
         anchor.setTarget("_blank");
-        button.addClickListener(event -> {
-            anchor.getElement().callJsFunction("click");
-        });
+        cuisineTypeDiv.add(anchor);
 
         return cuisineTypeDiv;
     }
