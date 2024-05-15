@@ -38,7 +38,7 @@ public interface RestaurantService {
 
     List<RestaurantDTO> getAll();
 
-    List<RestaurantDTO> getFiltered(List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch, String keywords);
+    List<RestaurantDTO> getFiltered(List<RestaurantDTO> restaurants, List<String> cuisineTypes, List<Integer> rating, List<Integer> price, List<Integer> routes, List<String> dishes, List<String> ingredients, String routeDeparturePoint, String fullTextSearch, String keywords);
 
     List<RestaurantDTO> getRestaurantInGivenDistance(String firstPoint, List<Integer> routes, List<RestaurantDTO> filtered);
 
@@ -50,7 +50,7 @@ public interface RestaurantService {
 
     List<RestaurantDTO> getRestaurantsDTOBySearchInEngAndUkr(String searchString, List<RestaurantDTO> restaurantList);
 
-    List<RestaurantModel> fullTextSearchInEngAndUkr(String text);
+    List<RestaurantModel> fullTextSearchInEngAndUkr(List<String> parts);
 
     List<ReviewDTO> getReviewsDTOByKeywords(String searchString);
 

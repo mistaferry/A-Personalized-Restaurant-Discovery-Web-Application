@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DishDbRepository extends JpaRepository<Dish,Long> {
-    Optional<Dish> findById(Long id);
+    @EntityGraph(attributePaths = {"ingredients", "dishType"})
+    @Query("SELECT d FROM Dish d where d.id=:id")
+    Optional<Dish> findById(@Param("id") Long id);
 
     List<Dish> findByCuisineType(String cuisineType);
 

@@ -163,7 +163,7 @@ public class Filters {
         routeDiv.addClassNames("main-div");
 
         Div checkboxContainer = new Div();
-        checkboxContainer.addClassNames("d-flex flex-wrap justify-content-between pd-2");
+        checkboxContainer.addClassNames("d-flex flex-wrap justify-content-between flex-column pd-2");
 
         routesDeparturePoint.setLabel("Відстань");
         String regexPattern = "^[a-zA-Zа-яА-ЯїЇіІєЄ0-9 .]+, [0-9]{1,3}$";
@@ -181,7 +181,7 @@ public class Filters {
         Map<Integer, String> checkboxValues = new HashMap<>();
         checkboxValues.put(2, "Пішки");
         checkboxValues.put(1, "Машина");
-        checkboxValues.put(0, "Географічна віддаленість");
+        checkboxValues.put(0, "Віддаленість");
 
         routeCheckbox.setItems(2, 1, 0);
         routeCheckbox.setItemLabelGenerator(checkboxValues::get);
@@ -198,7 +198,7 @@ public class Filters {
         dishDiv.addClassNames("main-div");
 
         Div dishesContainer = new Div();
-        dishesContainer.addClassNames("d-flex");
+        dishesContainer.addClassNames("d-flex flex-wrap justify-content-between");
 
         Map<Long, String> allDishes = dishService.getAllDishesNames();
         configureDishesCheckbox(allDishes);
@@ -206,7 +206,6 @@ public class Filters {
         List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(allDishes.values().toArray(new String[0]), 0, 4));
         partOfDishCheckbox.setLabel("Страви");
         partOfDishCheckbox.setItems(partOfValues);
-        partOfDishCheckbox.addClassName("flex-column");
         dishesContainer.add(partOfDishCheckbox);
         dishDiv.add(dishesContainer);
 
@@ -334,11 +333,12 @@ public class Filters {
         priceDiv.addClassNames("main-div");
         Div inputContainer = new Div();
         inputContainer.addClassNames("d-flex flex-wrap justify-content-between");
-//        inputContainer.getStyle().setMaxWidth("100%");
 
         reviewKeywordInput.setLabel("Відгуки");
         reviewKeywordInput.setClassName("review-text");
         reviewKeywordInput.setPlaceholder("Ключові слова");
+        reviewKeywordInput.setWidth("100%");
+        reviewSearchButton.setWidth("100%");
 
         inputContainer.add(reviewKeywordInput, reviewSearchButton);
         priceDiv.add(inputContainer);

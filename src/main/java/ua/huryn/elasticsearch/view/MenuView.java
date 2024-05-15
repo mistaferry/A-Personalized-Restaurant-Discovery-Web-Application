@@ -50,6 +50,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final UserDbRepository userDbRepository;
     private int currentPage = 0;
     private int pageSize = 20;
+    List<RestaurantDTO> allRestaurants;
 
     private final Button fullTextButton = new Button();
     TextField routesDeparturePoint;
@@ -69,8 +70,10 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         this.userDbRepository = userDbRepository;
         this.reviewKeywordsButton = filters.getReviewSearchButton();
         this.reviewKeywordsInput = filters.getReviewKeywordInput();
-        this.routesDeparturePoint = new TextField();
+        this.routesDeparturePoint = filters.getRoutesDeparturePoint();
         this.fullTextSearchField = new TextField();
+        allRestaurants = restaurantService.getAll();
+
         addAuthUserToDb();
 
         addListeners(this::updateMenu);
@@ -190,10 +193,10 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<String> selectedCuisine = filters.getCuisineCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedPrices = filters.getPriceLevelCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedRating = filters.getRatingCheckbox().getSelectedItems().stream().toList();
-        List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
+//        List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
-        String routeDeparturePointValue = routesDeparturePoint.getValue();
+//        String routeDeparturePointValue = routesDeparturePoint.getValue();
         String fullTextSearch = fullTextSearchField.getValue();
         String keyWords = reviewKeywordsInput.getValue();
 
@@ -205,21 +208,21 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         for (int i = 0; i < selectedRating.size(); i++) {
             rating.add(selectedRating.get(i).toString());
         }
-        List<String> routes = new ArrayList<>();
-        for (int i = 0; i < selectedRoutes.size(); i++) {
-            routes.add(selectedRoutes.get(i).toString());
-        }
+//        List<String> routes = new ArrayList<>();
+//        for (int i = 0; i < selectedRoutes.size(); i++) {
+//            routes.add(selectedRoutes.get(i).toString());
+//        }
 
         String cuisinesQuery = String.join(",", selectedCuisine);
         String priceQuery = String.join(",", prices);
         String ratingQuery = String.join(",", rating);
-        String routesQuery = String.join(",", routes);
+//        String routesQuery = String.join(",", routes);
         String dishesQuery = String.join(",", selectedDishes);
         String ingredientsQuery = String.join(",", selectedIngredients);
 
-        String query = "route=" + routesQuery +
+        String query = /*"route=" + routesQuery +*/
                 "&price=" + priceQuery + "&rating=" + ratingQuery + "&cuisine=" + cuisinesQuery + "&dish=" + dishesQuery + "&ingredient=" + ingredientsQuery +
-                "&departurePoint=" + routeDeparturePointValue + "&text=" + fullTextSearch + "&keywords=" + keyWords;
+                /*"&departurePoint=" + routeDeparturePointValue +*/ "&text=" + fullTextSearch + "&keywords=" + keyWords;
         JsonObject stateData = Json.createObject();
 
         UI.getCurrent().getPage().getHistory().replaceState(stateData, "?" + query);
@@ -229,14 +232,17 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<String> selectedCuisine = filters.getCuisineCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedPrices = filters.getPriceLevelCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedRating = new ArrayList<>(filters.getRatingCheckbox().getSelectedItems().stream().toList());
-        List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
+        List<Integer> selectedRoutes = new ArrayList<>(filters.getRouteCheckbox().getSelectedItems().stream().toList());
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
         String routeDeparturePointValue = routesDeparturePoint.getValue();
         String fullTextSearch = fullTextSearchField.getValue();
         String keyWords = reviewKeywordsInput.getValue();
 
-        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch, keyWords);
+//        selectedRoutes.add(1);
+//        routeDeparturePointValue = "Хрещатик 2, 20";
+
+        return restaurantService.getFiltered(allRestaurants, selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch, keyWords);
     }
 
     @Override
