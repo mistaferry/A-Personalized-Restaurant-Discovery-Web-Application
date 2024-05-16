@@ -16,7 +16,7 @@ public class MainView extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("Diploma Huryn");
+        H1 logo = new H1("Foodie Finds");
         var header = new HorizontalLayout(new DrawerToggle(), logo);
         addToNavbar(header);
         SideNavItem dashboardLink = new SideNavItem("Меню", MenuView.class, VaadinIcon.COFFEE.create());

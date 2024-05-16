@@ -176,3 +176,36 @@ vaadin-checkbox{
 .review-text{
     width: 60%;
 }
+
+@media (max-width: 720px) {
+    .menu-div{
+        flex-direction: column;
+    }
+    .down-section{
+        flex-direction: column;
+    }
+    .filters{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-div{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .curr-restaurant-info-div{
+        margin: 0;
+        width: 100%;
+        padding: 3%;
+    }
+    .basic{
+        flex-direction: column
+    }
+    .review-div{
+        margin: 0;
+        padding: 3%;
+        width: 100%;
+    }
+}
