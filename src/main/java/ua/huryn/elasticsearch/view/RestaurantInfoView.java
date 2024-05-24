@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.Review;
 import ua.huryn.elasticsearch.entity.db.User;

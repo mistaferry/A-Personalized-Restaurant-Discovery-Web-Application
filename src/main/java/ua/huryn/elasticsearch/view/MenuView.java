@@ -1,6 +1,7 @@
 package ua.huryn.elasticsearch.view;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.*;
@@ -13,12 +14,10 @@ import com.vaadin.flow.router.*;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
@@ -58,6 +57,7 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     Div menuDiv;
     private Button reviewKeywordsButton;
     private TextField reviewKeywordsInput;
+    private ComboBox<String> fullTextCombobox;
 
     @Autowired
     public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService, GeneralProperties generalProperties, UserDbRepository userDbRepository) {
@@ -72,11 +72,13 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         this.reviewKeywordsInput = filters.getReviewKeywordInput();
         this.routesDeparturePoint = filters.getRoutesDeparturePoint();
         this.fullTextSearchField = new TextField();
-        allRestaurants = restaurantService.getAll();
+        this.allRestaurants = restaurantService.getAll();
+        this.fullTextCombobox = new ComboBox<>();
 
         addAuthUserToDb();
 
         addListeners(this::updateMenu);
+//        fulltextListener();
 
         fullTextButton.addClickListener(event -> {
             updateMenu();
@@ -97,6 +99,19 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         filters.getDishesCheckbox().addValueChangeListener(e -> listener.run());
         filters.getIngredientsCheckbox().addValueChangeListener(e -> listener.run());
     }
+
+//    public void fulltextListener(){
+//        List<String> list = new ArrayList<>();
+//        this.fullTextCombobox.addCustomValueSetListener(event -> {
+//            String input = event.getDetail();
+//            List<String> restaurantNames = restaurantService.getRestaurantsDTOBySearchInEngAndUkr(input, allRestaurants)
+//                    .stream()
+//                    .map(RestaurantDTO::getName)
+//                    .collect(Collectors.toList());
+//            this.fullTextCombobox.setItems(restaurantNames);
+//        });
+//        this.fullTextCombobox.setItems(list);
+//    }
 
     private void updateMenu() {
         this.currentPage = 0;
@@ -177,6 +192,18 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 
         return searchSection;
     }
+//    private Div createSearchSection() {
+//        Div searchSection = new Div();
+//        searchSection.addClassNames("search-section basic");
+//
+//        fullTextCombobox.setPlaceholder("Пошук...");
+//        fullTextCombobox.setPrefixComponent(VaadinIcon.SEARCH.create());
+//        fullTextCombobox.addClassName("search-field");
+//
+//        searchSection.add(fullTextCombobox);
+//
+//        return searchSection;
+//    }
 
     private Div createDownSection() {
         Div downSection = new Div();

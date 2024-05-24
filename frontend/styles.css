@@ -177,6 +177,24 @@ vaadin-checkbox{
     width: 60%;
 }
 
+/* admin page */
+
+.admin-full-div{
+    width: 100%;
+    height: 400px;
+    background: #7fffd4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-page-function{
+    width: 90%;
+    height: 90%;
+    background: #0074d9;
+    border-color: #000;
+}
+
 @media (max-width: 720px) {
     .menu-div{
         flex-direction: column;

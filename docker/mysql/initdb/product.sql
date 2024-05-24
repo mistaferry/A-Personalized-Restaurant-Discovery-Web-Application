@@ -32,18 +32,33 @@ CREATE TABLE IF NOT EXISTS restaurant_info_en (
     FOREIGN KEY (restaurant_id) REFERENCES restaurant(restaurant_id)
 );
 
+create table if not exists role(
+    role_id bigint auto_increment,
+    name varchar(256),
+    primary key (role_id)
+);
+
+INSERT INTO db.role (role_id, name) VALUES (1, 'user');
+INSERT INTO db.role (role_id, name) VALUES (2, 'admin');
+
 
 create table if not exists user(
     user_id bigint,
     username varchar(256),
     email varchar(256),
+    picture varchar(256),
+    role_id bigint,
     primary key (user_id)
 );
+
+ALTER TABLE user
+    ADD CONSTRAINT fk_role
+        FOREIGN KEY (role_id) REFERENCES role (role_id);
 
 create table if not exists review
 (
     review_id bigint,
-    text LONGTEXT,
+    text longtext,
     time timestamp,
     restaurant_id bigint,
     user_id bigint,
@@ -305,4 +320,4 @@ create table if not exists restaurant_dish
 # (31,45),
 # (31,30);
 #
-# insert into user values (1, 'googleUser', 'google.user@gmail.com')
+# insert into user values (1, 'googleUser', 'google.user@gmail.com', 1)
