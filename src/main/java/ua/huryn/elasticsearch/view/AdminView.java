@@ -9,6 +9,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
+import ua.huryn.elasticsearch.entity.dto.DishDTO;
+import ua.huryn.elasticsearch.entity.dto.IngredientDTO;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.IngredientsService;
@@ -16,7 +18,6 @@ import ua.huryn.elasticsearch.service.RestaurantService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @PageTitle("Admin")
 @Route(value = "/admin", layout = MainView.class)
@@ -28,15 +29,20 @@ public class AdminView extends VerticalLayout {
     private final DishService dishService;
     private final IngredientsService ingredientsService;
     private List<RestaurantDTO> allRestaurants;
-    private ComboBox<String> restaurants;
+    private List<DishDTO> allDishes;
+    private List<IngredientDTO> allIngredients;
+    private ComboBox<String> restaurantsCombobox;
+    private RestaurantDTO selectedRestaurant;
+    private ComboBox<String> dishesCombobox;
 
     public AdminView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
         this.restaurantService = restaurantService;
         this.dishService = dishService;
         this.ingredientsService = ingredientsService;
-        this.restaurants = new ComboBox<>();
+        this.restaurantsCombobox = new ComboBox<>();
         this.allRestaurants = restaurantService.getAll();
-
+        this.allDishes = dishService.getAll();
+        this.allIngredients = ingredientsService.getAll();
         add(addRestaurantInfo());
 
         restaurantCheckboxListener();
@@ -49,6 +55,7 @@ public class AdminView extends VerticalLayout {
         Div createDiv = new Div();
         createDiv.addClassNames("admin-page-function");
 
+
         createDiv.add(createSearchByRestaurant());
 
         div.add(createDiv);
@@ -59,25 +66,47 @@ public class AdminView extends VerticalLayout {
         Div searchSection = new Div();
         searchSection.addClassNames("search-section basic");
 
-        restaurants.setPlaceholder("Ресторан");
-        restaurants.setPrefixComponent(VaadinIcon.SEARCH.create());
-        restaurants.addClassName("search-field");
+        restaurantsCombobox.setPlaceholder("Ресторан");
+        restaurantsCombobox.setPrefixComponent(VaadinIcon.SEARCH.create());
+        restaurantsCombobox.addClassName("search-field");
 
-        searchSection.add(restaurants);
+        searchSection.add(restaurantsCombobox);
 
         return searchSection;
     }
 
     public void restaurantCheckboxListener(){
         List<String> list = new ArrayList<>();
-        this.restaurants.addCustomValueSetListener(event -> {
+        this.restaurantsCombobox.addCustomValueSetListener(event -> {
             String input = event.getDetail();
             List<String> restaurantDetails = restaurantService.getRestaurantsDTOBySearchInEngAndUkr(input, allRestaurants)
                     .stream()
                     .map(restaurant -> restaurant.getName() + ", " + restaurant.getAddress())
                     .toList();
-            this.restaurants.setItems(restaurantDetails);
+            this.restaurantsCombobox.setItems(restaurantDetails);
         });
-        this.restaurants.setItems(list);
+        this.restaurantsCombobox.addValueChangeListener(event -> {
+            String input = event.getValue();
+            this.selectedRestaurant = (restaurantService.getRestaurantsDTOBySearchInEngAndUkr(input, allRestaurants)).get(0);
+//            log.info("restaurant - {}", selectedRestaurant.getName() + ", " + selectedRestaurant.getAddress());
+        });
+        this.restaurantsCombobox.setItems(list);
+    }
+
+    private Div createSearchByDish() {
+        Div searchSection = new Div();
+        searchSection.addClassNames("search-section basic");
+
+        restaurantsCombobox.setPlaceholder("Страва");
+        restaurantsCombobox.setPrefixComponent(VaadinIcon.SEARCH.create());
+        restaurantsCombobox.addClassName("search-field");
+
+        searchSection.add(restaurantsCombobox);
+
+        return searchSection;
+    }
+
+    private void addDataToDb(){
+
     }
 }

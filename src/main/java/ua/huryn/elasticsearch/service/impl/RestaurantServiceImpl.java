@@ -169,6 +169,21 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantModelList;
     }
 
+
+    @Override
+    public List<RestaurantDTO> findByNameAndAddress(String value) {
+        String[] values = value.split(", ");
+        List<RestaurantDTO> restaurantByName = findByName(values[0]);
+
+        return List.of();
+    }
+
+    @Override
+    public List<RestaurantDTO> findByAddress(String address) {
+//        List<Restaurant> restaurants = restaurantDbRepository
+        return List.of();
+    }
+
     @Override
     public List<RestaurantDTO> getAll() {
         List<Restaurant> restaurants = restaurantDbRepository.getAll();

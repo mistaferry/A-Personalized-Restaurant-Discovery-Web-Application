@@ -29,6 +29,10 @@ public interface RestaurantService {
 
     List<RestaurantDTO> findByRatingAndPrice_level(double rating, int priceLevel);
 
+    List<RestaurantDTO> findByNameAndAddress(String value);
+
+    List<RestaurantDTO> findByAddress(String address);
+
 //    @Query(nativeQuery = true, value = "SELECT r.*\n" +
 //            "from restaurant r\n" +
 //            "         right join db.restaurant_dish rd on r.restaurant_id = rd.restaurant_id\n" +

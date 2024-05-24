@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ua.huryn.elasticsearch.entity.db.Dish;
 import ua.huryn.elasticsearch.entity.db.Ingredient;
+import ua.huryn.elasticsearch.entity.dto.DishDTO;
 import ua.huryn.elasticsearch.repository.db.DishDbRepository;
 import ua.huryn.elasticsearch.repository.db.IngredientDbRepository;
 import ua.huryn.elasticsearch.service.DishService;
+import ua.huryn.elasticsearch.utils.Convertor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,4 +38,11 @@ public class DishServiceImpl implements DishService {
         List<Ingredient> ingredients = ingredientDbRepository.findIngredientsByDishId(dish.getId()).orElse(null);
         dish.setIngredients(ingredients);
     }
+
+    @Override
+    public List<DishDTO> getAll() {
+        List<Dish> dishes = dishDbRepository.getAll();
+        return Convertor.convertDishEntityListToDTO(dishes);
+    }
+
 }
