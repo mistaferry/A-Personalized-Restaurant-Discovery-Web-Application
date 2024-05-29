@@ -52,8 +52,6 @@ public class AdminView extends VerticalLayout {
         this.allDishes = dishService.getAll();
         this.allIngredients = ingredientsService.getAll();
 
-
-
         Div div = new Div();
         div.addClassNames("admin-full-div");
 
@@ -103,81 +101,35 @@ public class AdminView extends VerticalLayout {
         this.restaurantsCombobox.setItems(list);
     }
 
+    private Div createSearchByDish() {
+        Div searchSection = new Div();
+        searchSection.addClassNames("search-section basic");
 
-//    Div dishInfo = new Div();
-//        dishInfo.addClassNames("admin-dish-info");
-//    TextField name = new TextField();
-//        name.setValue("qwert");
-//    TextField price = new TextField();
-//        name.setValue("ghjkl");
-//    TextField dishType = new TextField();
-//        dishType.setValue("dvavra");
-//    TextField cuisine = new TextField();
-//        cuisine.setValue("awfawevrg");
-//        dishInfo.add(name, price, dishType, cuisine);
-//        searchSection.add(dishInfo);
-private Div createSearchByDish() {
-    Div searchSection = new Div();
-    searchSection.addClassNames("search-section basic");
+        dishesCombobox.setPlaceholder("Страва");
+        dishesCombobox.setPrefixComponent(VaadinIcon.SEARCH.create());
+        dishesCombobox.addClassName("admin-search-field");
+        searchSection.add(dishesCombobox);
 
-    dishesCombobox.setPlaceholder("Страва");
-    dishesCombobox.setPrefixComponent(VaadinIcon.SEARCH.create());
-    dishesCombobox.addClassName("admin-search-field");
-    searchSection.add(dishesCombobox);
+        return searchSection;
+    }
 
-//    // Добавляем слушатель изменения значения
-//    dishesCombobox.addValueChangeListener(event -> {
-//        String input = event.getValue();
-//        if (input != null && !input.isEmpty()) {
-//            List<String> dishDetails = dishService.getDishDTOBySearch(input)
-//                    .stream()
-//                    .map(dish -> dish.getName() + ", " + dish.getPrice())
-//                    .toList();
-//            dishesCombobox.setItems(dishDetails);
-//        } else {
-//            // Очистка списка, если ввод пуст
-//            dishesCombobox.clear();
-//        }
-//    });
-
-    return searchSection;
-}
-
-    // Метод, добавляющий слушатель для обработки выбора элемента из ComboBox
     public void dishCheckboxListener() {
-//        dishesCombobox.setItems(query -> {
-//            String filter = query.getFilter().orElse("");
-//            return dishService.getDishDTOBySearch(filter)
-//                    .stream()
-//                    .map(dish -> dish.getName() + ", " + dish.getPrice())
-//                    .toList()
-//                    .stream();
-//        });
-//
-//        dishesCombobox.addValueChangeListener(event -> {
-//            String input = event.getValue();
-//            if (input != null && !input.isEmpty()) {
-//                selectedDish = dishService.getDishDTOBySearch(input).get(0);
-//                // log.info("selectedDish - {}", selectedDish.getName() + ", " + selectedDish.getPrice());
-//            }
-//        });
         dishesCombobox.addValueChangeListener(event -> {
             String input = event.getValue();
             if (input != null && !input.isEmpty()) {
                 selectedDish = dishService.getDishDTOBySearch(input).get(0);
-                // log.info("selectedDish - {}", selectedDish.getName() + ", " + selectedDish.getPrice());
             }
         });
 
         dishesCombobox.setItems(query -> {
             String filter = query.getFilter().orElse("");
             int limit = query.getLimit();
-            int offset = query.getOffset(); // отримуємо offset з запиту
+            int offset = query.getOffset();
             List<String> dishDetails = dishService.getDishDTOBySearch(filter)
                     .stream()
-                    .skip(offset) // пропускаємо вже відображені записи
+                    .skip(offset)
                     .limit(limit)
-                    .map(dish -> dish.getName() + ", " + dish.getPrice())
+                    .map(dish -> dish.getName() + ", " + dish.getPrice() + " грн.")
                     .toList();
             return dishDetails.stream();
         });
@@ -193,6 +145,18 @@ private Div createSearchByDish() {
 
         searchSection.add(ingredientsCombobox);
 
+        //    Div dishInfo = new Div();
+//        dishInfo.addClassNames("admin-dish-info");
+//    TextField name = new TextField();
+//        name.setValue("qwert");
+//    TextField price = new TextField();
+//        name.setValue("ghjkl");
+//    TextField dishType = new TextField();
+//        dishType.setValue("dvavra");
+//    TextField cuisine = new TextField();
+//        cuisine.setValue("awfawevrg");
+//        dishInfo.add(name, price, dishType, cuisine);
+//        searchSection.add(dishInfo);
         return searchSection;
     }
 
