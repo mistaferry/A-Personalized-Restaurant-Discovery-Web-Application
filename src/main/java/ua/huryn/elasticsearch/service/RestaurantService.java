@@ -52,6 +52,8 @@ public interface RestaurantService {
 
     List<ReviewModel> searchByReviewKeywords(List<String> parts);
 
+    RestaurantDTO searchByRestaurantInfo(String info);
+
     List<RestaurantDTO> getRestaurantsDTOBySearchInEngAndUkr(String searchString, List<RestaurantDTO> restaurantList);
 
     List<RestaurantModel> fullTextSearchInEngAndUkr(List<String> parts);

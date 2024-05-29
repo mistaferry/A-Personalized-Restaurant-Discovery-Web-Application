@@ -14,6 +14,8 @@ public interface DishService {
 
     List<DishDTO> getAll();
 
+    DishDTO getByNameAndPrice(String info);
+
     List<DishDTO> getDishDTOBySearch(String searchString);
 
     List<DishModel> searchByDishInfo(List<String> parts);

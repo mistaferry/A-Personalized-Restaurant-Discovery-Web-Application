@@ -741,6 +741,18 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     }
 
+    @Override
+    public RestaurantDTO searchByRestaurantInfo(String info) {
+        List<RestaurantDTO> restaurantDTOS = getAll();
+        for (RestaurantDTO restaurant: restaurantDTOS){
+            String string = restaurant.getName() + " " + restaurant.getAddress();
+            if(string.equals(info)){
+                return restaurant;
+            }
+        }
+        return null;
+    }
+
     public List<RestaurantDTO> getRestaurantsByReviewKeywords(String keywords, List<RestaurantDTO> filteredData){
         if(keywords != null && !keywords.isBlank()){
             List<ReviewDTO> foundReviews = getReviewsDTOByKeywords(keywords);

@@ -106,4 +106,16 @@ public class DishServiceImpl implements DishService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public DishDTO getByNameAndPrice(String info){
+        List<DishDTO> dishDTOS = getAll();
+        for (DishDTO dishDTO: dishDTOS){
+            String str = dishDTO.getName() + " " + dishDTO.getPrice() + " грн.";
+            if(info.equals(str)){
+                return dishDTO;
+            }
+        }
+        return null;
+    }
+
 }

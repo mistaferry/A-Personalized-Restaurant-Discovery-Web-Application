@@ -1,7 +1,9 @@
 package ua.huryn.elasticsearch.repository.db;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -55,4 +57,10 @@ public interface RestaurantDbRepository extends JpaRepository<Restaurant,Integer
             "         RIGHT JOIN db.ingredient i ON i.ingredient_id = di.ingredient_id\n" +
             "WHERE i.name =:ingredient_name")
     Optional<List<Restaurant>> findRestaurantByIngredientName(@Param("ingredient_name") String ingredientName);
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true, value = "INSERT INTO restaurant_dish (restaurant_id, dish_id)\n" +
+            "    VALUE (:restaurant_id, :dish_id)")
+    void addDishToRestaurant(@Param("restaurant_id") Long restaurant_id, @Param("dish_id") Long dish_id);
 }
