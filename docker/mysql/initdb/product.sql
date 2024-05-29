@@ -115,7 +115,7 @@ create table if not exists restaurant_dish
     foreign key (dish_id) references dish (dish_id),
     foreign key (restaurant_id) references restaurant (restaurant_id)
 );
-
+#
 # INSERT INTO dish_type (type_id, name)
 # VALUES (1, 'Салат'),
 #        (2, 'Суп'),
@@ -320,4 +320,4 @@ create table if not exists restaurant_dish
 # (31,45),
 # (31,30);
 #
-# insert into user values (1, 'googleUser', 'google.user@gmail.com', 1)
+# insert into user values (0, 'googleUser', 'google.user@gmail.com', null ,1)

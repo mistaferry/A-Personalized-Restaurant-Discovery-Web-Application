@@ -24,7 +24,7 @@ public class DbOperationRunner extends UI implements CommandLineRunner  {
             try {
                 log.info("Start adding data from Google");
                 log.debug("Add data to database");
-//                restaurantService.addDataToDb();
+                restaurantService.addDataToDb();
                 log.debug("Add data to file");
                 restaurantService.addApiDataToFile();
                 log.info("Data from Google was added");

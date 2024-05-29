@@ -6,10 +6,16 @@
 .search-section{
     width: 100%;
     align-items: center;
+    flex-direction: column;
 }
 .search-field{
     width: 50%;
     padding: 2px;
+}
+
+.admin-search-field{
+    width: 80%;
+    margin-top: 20px;
 }
 
 .search-button{
@@ -191,8 +197,24 @@ vaadin-checkbox{
 .admin-page-function{
     width: 90%;
     height: 90%;
-    background: #0074d9;
-    border-color: #000;
+    /*background: #0074d9;*/
+    /*border-color: #000;*/
+    flex-direction: column;
+}
+
+.admin-dish-info{
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    /*background: aqua;*/
+}
+
+.admin-dish-info > * {
+    width: 20%;
+    /*background: blueviolet;*/
+    border: black;
+    margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 @media (max-width: 720px) {
