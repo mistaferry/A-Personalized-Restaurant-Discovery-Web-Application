@@ -8,11 +8,10 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
-@Route("login")
-@PageTitle("Login")
+@Route("logout")
+@PageTitle("Logout")
 @AnonymousAllowed
 public class LogoutView extends VerticalLayout {
-    // URL that Spring Security uses to connect to Google services
     private static final String LOGOUT_URL = "/";
 
     public LogoutView() {

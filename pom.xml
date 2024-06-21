@@ -21,273 +21,6 @@
         <springdoc-openapi-starter-webmvc-ui.version>2.1.0</springdoc-openapi-starter-webmvc-ui.version>
     </properties>
 
-<!--    <dependencies>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-web</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.data</groupId>-->
-<!--            <artifactId>spring-data-elasticsearch</artifactId>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; Swagger &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.springdoc</groupId>-->
-<!--            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springdoc</groupId>-->
-<!--            <artifactId>springdoc-openapi-starter-common</artifactId>-->
-<!--            <version>2.5.0</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; Lombok &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>${lombok.version}</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-test</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.google.maps</groupId>-->
-<!--            <artifactId>google-maps-services</artifactId>-->
-<!--            <version>2.2.0</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.google.maps</groupId>-->
-<!--            <artifactId>google-maps-routing</artifactId>-->
-<!--            <version>1.26.0</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-simple</artifactId>-->
-<!--            <version>1.7.25</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>com.vaadin</groupId>-->
-<!--            <artifactId>-->
-<!--                vaadin-spring-boot-starter-->
-<!--            </artifactId>-->
-<!--            <version>24.3.9</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.json</groupId>-->
-<!--            <artifactId>json</artifactId>-->
-<!--            <version>20240303</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.data</groupId>-->
-<!--            <artifactId>spring-data-jpa</artifactId>-->
-<!--            <version>3.1.3</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>mysql</groupId>-->
-<!--            <artifactId>mysql-connector-java</artifactId>-->
-<!--            <version>8.0.22</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.hibernate</groupId>-->
-<!--            <artifactId>hibernate-core</artifactId>-->
-<!--            <version>6.4.4.Final</version>-->
-<!--            <type>pom</type>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.elasticsearch</groupId>-->
-<!--            <artifactId>elasticsearch</artifactId>-->
-<!--            <version>7.6.2</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.elasticsearch.client</groupId>-->
-<!--            <artifactId>elasticsearch-rest-high-level-client</artifactId>-->
-<!--            <version>7.17.12</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org</groupId>-->
-<!--            <artifactId>spring-data-elasticsearch</artifactId>-->
-<!--            <version>3.2.5.RELEASE</version>-->
-<!--        </dependency>-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-config</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>6.2.4</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-core</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>6.2.4</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-framework-bom</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>6.1.6</version>&ndash;&gt;-->
-<!--&lt;!&ndash;            <type>pom</type>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-
-
-
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>javax.servlet</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>javax.servlet-api</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>4.0.1</version>  &lt;!&ndash; Виберіть відповідну версію &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;            <scope>provided</scope>  &lt;!&ndash; Використовуйте обмеження 'provided', щоб уникнути конфліктів &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-config</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>6.1.3</version> &lt;!&ndash; Align with your Spring Boot version &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.boot</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-boot-dependencies</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>3.1.3</version> &lt;!&ndash; Matches with your Spring Boot version &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;            <type>pom</type>&ndash;&gt;-->
-<!--&lt;!&ndash;            <scope>import</scope>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.boot</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-boot-starter-security</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-
-<!--        <dependency>-->
-<!--            <groupId>javax.servlet</groupId>-->
-<!--            <artifactId>javax.servlet-api</artifactId>-->
-<!--            <version>4.0.1</version> &lt;!&ndash; або інша потрібна версія &ndash;&gt;-->
-<!--            <scope>provided</scope> &lt;!&ndash; якщо використовується з контейнером сервлетів &ndash;&gt;-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.security</groupId>-->
-<!--            <artifactId>spring-security-config</artifactId>-->
-<!--            <version>6.2.4</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-web</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>6.2.4</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-
-
-<!--        &lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.boot</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-boot-starter-oauth2-client</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-config</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>5.2.1.RELEASE</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--        &lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.boot</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-boot-starter-security</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>3.2.5</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.boot</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-boot-starter-oauth2-client</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-config</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>6.2.4</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>javax.servlet</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>javax.servlet-api</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>4.0.1</version>  &lt;!&ndash; Виберіть відповідну версію &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;            <scope>provided</scope>  &lt;!&ndash; Позначте як "provided", оскільки сервер вже має цю бібліотеку &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;            <groupId>org.springframework.security</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <artifactId>spring-security-config</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;            <version>5.2.1.RELEASE</version>&ndash;&gt;-->
-<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
-<!--    </dependencies>-->
-
-<!--    <dependencyManagement>-->
-<!--        <dependencies>-->
-<!--            &lt;!&ndash; Swagger &ndash;&gt;-->
-<!--&lt;!&ndash;            <dependency>&ndash;&gt;-->
-<!--&lt;!&ndash;                <groupId>org.springdoc</groupId>&ndash;&gt;-->
-<!--&lt;!&ndash;                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>&ndash;&gt;-->
-<!--&lt;!&ndash;                <version>${springdoc-openapi-starter-webmvc-ui.version}</version>&ndash;&gt;-->
-<!--&lt;!&ndash;            </dependency>&ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>org.springdoc</groupId>-->
-<!--                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>-->
-<!--                <version>2.5.0</version>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>com.vaadin</groupId>-->
-<!--                <artifactId>vaadin-spring-boot-starter</artifactId>-->
-<!--            </dependency>-->
-
-<!--            <dependency>-->
-<!--                <groupId>com.vaadin</groupId>-->
-<!--                <artifactId>vaadin-bom</artifactId>-->
-<!--                <version>24.3.9</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-<!--        </dependencies>-->
-<!--    </dependencyManagement>-->
-
-<!--    <build>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.springframework.boot</groupId>-->
-<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <excludes>-->
-<!--                        <exclude>-->
-<!--                            <groupId>org.projectlombok</groupId>-->
-<!--                            <artifactId>lombok</artifactId>-->
-<!--                        </exclude>-->
-<!--                    </excludes>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-enforcer-plugin</artifactId>-->
-<!--                <version>3.4.1</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>enforce-maven</id>-->
-<!--                        <goals>-->
-<!--                            <goal>enforce</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <rules>-->
-<!--                                <requireMavenVersion>-->
-<!--                                    <version>3.0</version>-->
-<!--                                </requireMavenVersion>-->
-<!--                            </rules>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>com.vaadin</groupId>-->
-<!--                <artifactId>vaadin-maven-plugin</artifactId>-->
-<!--                <version>8.7.0</version>-->
-<!--&lt;!&ndash;                <executions>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <execution>&ndash;&gt;-->
-<!--&lt;!&ndash;                        <goals>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <goal>prepare-frontend</goal>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <goal>build-frontend</goal>&ndash;&gt;-->
-<!--&lt;!&ndash;                        </goals>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </execution>&ndash;&gt;-->
-<!--&lt;!&ndash;                </executions>&ndash;&gt;-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -391,6 +124,23 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.7.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org</groupId>
+            <artifactId>spring-data-elasticsearch</artifactId>
+            <version>3.2.5.RELEASE</version>
         </dependency>
     </dependencies>
 

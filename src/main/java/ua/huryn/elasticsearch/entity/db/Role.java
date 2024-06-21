@@ -9,12 +9,12 @@ import lombok.ToString;
 @Getter
 @ToString
 @Entity
-@Table(name="category")
-public class Category {
+@Table(name="role")
+public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "category_id")
-    private long id;
+    @Column(name = "role_id")
+    private Long id;
     @Column(name = "name")
     private String name;
 }

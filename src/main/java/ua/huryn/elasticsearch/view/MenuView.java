@@ -1,6 +1,7 @@
 package ua.huryn.elasticsearch.view;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.*;
@@ -13,12 +14,10 @@ import com.vaadin.flow.router.*;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
@@ -36,7 +35,7 @@ import static ua.huryn.elasticsearch.utils.QueryParameter.getIntegerSetFromQuery
 import static ua.huryn.elasticsearch.utils.QueryParameter.getStringSetFromQueryParameters;
 
 @PageTitle("Menu")
-@Route(value = "", layout = MainView.class)
+@Route(value = "/user/menu", layout = MainView.class)
 @CssImport("styles.css")
 @PermitAll
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
@@ -49,14 +48,16 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     private final GeneralProperties generalProperties;
     private final UserDbRepository userDbRepository;
     private int currentPage = 0;
-    private int pageSize = 10;
+    private int pageSize = 20;
+    List<RestaurantDTO> allRestaurants;
 
     private final Button fullTextButton = new Button();
     TextField routesDeparturePoint;
-    TextField fullTextSearchField = new TextField();
+    TextField fullTextSearchField;
     Div menuDiv;
     private Button reviewKeywordsButton;
     private TextField reviewKeywordsInput;
+    private ComboBox<String> fullTextCombobox;
 
     @Autowired
     public MenuView(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService, GeneralProperties generalProperties, UserDbRepository userDbRepository) {
@@ -69,13 +70,21 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         this.userDbRepository = userDbRepository;
         this.reviewKeywordsButton = filters.getReviewSearchButton();
         this.reviewKeywordsInput = filters.getReviewKeywordInput();
-        this.routesDeparturePoint = new TextField();
+        this.routesDeparturePoint = filters.getRoutesDeparturePoint();
+        this.fullTextSearchField = new TextField();
+        this.allRestaurants = restaurantService.getAll();
+        this.fullTextCombobox = new ComboBox<>();
 
         addAuthUserToDb();
 
         addListeners(this::updateMenu);
+//        fulltextListener();
 
         fullTextButton.addClickListener(event -> {
+            updateMenu();
+        });
+
+        reviewKeywordsButton.addClickListener(event -> {
             updateMenu();
         });
 
@@ -90,6 +99,19 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         filters.getDishesCheckbox().addValueChangeListener(e -> listener.run());
         filters.getIngredientsCheckbox().addValueChangeListener(e -> listener.run());
     }
+
+//    public void fulltextListener(){
+//        List<String> list = new ArrayList<>();
+//        this.fullTextCombobox.addCustomValueSetListener(event -> {
+//            String input = event.getDetail();
+//            List<String> restaurantNames = restaurantService.getRestaurantsDTOBySearchInEngAndUkr(input, allRestaurants)
+//                    .stream()
+//                    .map(RestaurantDTO::getName)
+//                    .collect(Collectors.toList());
+//            this.fullTextCombobox.setItems(restaurantNames);
+//        });
+//        this.fullTextCombobox.setItems(list);
+//    }
 
     private void updateMenu() {
         this.currentPage = 0;
@@ -170,6 +192,18 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
 
         return searchSection;
     }
+//    private Div createSearchSection() {
+//        Div searchSection = new Div();
+//        searchSection.addClassNames("search-section basic");
+//
+//        fullTextCombobox.setPlaceholder("Пошук...");
+//        fullTextCombobox.setPrefixComponent(VaadinIcon.SEARCH.create());
+//        fullTextCombobox.addClassName("search-field");
+//
+//        searchSection.add(fullTextCombobox);
+//
+//        return searchSection;
+//    }
 
     private Div createDownSection() {
         Div downSection = new Div();
@@ -186,9 +220,12 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         List<String> selectedCuisine = filters.getCuisineCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedPrices = filters.getPriceLevelCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedRating = filters.getRatingCheckbox().getSelectedItems().stream().toList();
-        List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
+//        List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
+//        String routeDeparturePointValue = routesDeparturePoint.getValue();
+        String fullTextSearch = fullTextSearchField.getValue();
+        String keyWords = reviewKeywordsInput.getValue();
 
         List<String> prices = new ArrayList<>();
         for (int i = 0; i < selectedPrices.size(); i++) {
@@ -198,20 +235,21 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         for (int i = 0; i < selectedRating.size(); i++) {
             rating.add(selectedRating.get(i).toString());
         }
-        List<String> routes = new ArrayList<>();
-        for (int i = 0; i < selectedRoutes.size(); i++) {
-            routes.add(selectedRoutes.get(i).toString());
-        }
+//        List<String> routes = new ArrayList<>();
+//        for (int i = 0; i < selectedRoutes.size(); i++) {
+//            routes.add(selectedRoutes.get(i).toString());
+//        }
 
         String cuisinesQuery = String.join(",", selectedCuisine);
         String priceQuery = String.join(",", prices);
         String ratingQuery = String.join(",", rating);
-        String routesQuery = String.join(",", routes);
+//        String routesQuery = String.join(",", routes);
         String dishesQuery = String.join(",", selectedDishes);
         String ingredientsQuery = String.join(",", selectedIngredients);
-        // Create the query parameter for cuisines and price
-        String query = "route=" + routesQuery +
-                "&price=" + priceQuery + "&rating=" + ratingQuery + "&cuisine=" + cuisinesQuery + "&dish=" + dishesQuery + "&ingredient=" + ingredientsQuery;
+
+        String query = /*"route=" + routesQuery +*/
+                "&price=" + priceQuery + "&rating=" + ratingQuery + "&cuisine=" + cuisinesQuery + "&dish=" + dishesQuery + "&ingredient=" + ingredientsQuery +
+                /*"&departurePoint=" + routeDeparturePointValue +*/ "&text=" + fullTextSearch + "&keywords=" + keyWords;
         JsonObject stateData = Json.createObject();
 
         UI.getCurrent().getPage().getHistory().replaceState(stateData, "?" + query);
@@ -220,13 +258,18 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
     public List<RestaurantDTO> getFilteredRestaurantModelList() {
         List<String> selectedCuisine = filters.getCuisineCheckbox().getSelectedItems().stream().toList();
         List<Integer> selectedPrices = filters.getPriceLevelCheckbox().getSelectedItems().stream().toList();
-        List<Integer> selectedRating = filters.getRatingCheckbox().getSelectedItems().stream().toList();
-        List<Integer> selectedRoutes = filters.getRouteCheckbox().getSelectedItems().stream().toList();
+        List<Integer> selectedRating = new ArrayList<>(filters.getRatingCheckbox().getSelectedItems().stream().toList());
+        List<Integer> selectedRoutes = new ArrayList<>(filters.getRouteCheckbox().getSelectedItems().stream().toList());
         List<String> selectedDishes = filters.getDishesCheckbox().getSelectedItems().stream().toList();
         List<String> selectedIngredients = filters.getIngredientsCheckbox().getSelectedItems().stream().toList();
         String routeDeparturePointValue = routesDeparturePoint.getValue();
         String fullTextSearch = fullTextSearchField.getValue();
-        return restaurantService.getFiltered(selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch);
+        String keyWords = reviewKeywordsInput.getValue();
+
+//        selectedRoutes.add(1);
+//        routeDeparturePointValue = "Хрещатик 2, 20";
+
+        return restaurantService.getFiltered(allRestaurants, selectedCuisine, selectedRating, selectedPrices, selectedRoutes, selectedDishes, selectedIngredients, routeDeparturePointValue, fullTextSearch, keyWords);
     }
 
     @Override
@@ -262,6 +305,30 @@ public class MenuView extends VerticalLayout implements BeforeEnterObserver {
         if (!ingredientSet.isEmpty()) {
             filters.getIngredientsCheckbox().setValue(ingredientSet);
         }
+
+        Set<String> routeDeparturePointValue = getStringSetFromQueryParameters(queryParameters, "departurePoint");
+        if (routeDeparturePointValue.isEmpty()){
+            filters.getRoutesDeparturePoint().setValue("");
+        }else {
+            String value = String.join(" ", routeDeparturePointValue);
+            filters.getRoutesDeparturePoint().setValue(value);
+        }
+        Set<String> fullTextSearch = getStringSetFromQueryParameters(queryParameters, "text");
+        if (fullTextSearch.isEmpty()){
+            fullTextSearchField.setValue("");
+        }else {
+            String value = String.join(" ", fullTextSearch);
+            fullTextSearchField.setValue(value);
+        }
+        Set<String> keyWords = getStringSetFromQueryParameters(queryParameters, "keywords");
+        if (keyWords.isEmpty()){
+            filters.getReviewKeywordInput().setValue("");
+        }else {
+            String value = String.join(" ", keyWords);
+            filters.getReviewKeywordInput().setValue(value);
+        }
+        reviewKeywordsButton.click();
+        fullTextButton.click();
     }
 
     void addAuthUserToDb(){

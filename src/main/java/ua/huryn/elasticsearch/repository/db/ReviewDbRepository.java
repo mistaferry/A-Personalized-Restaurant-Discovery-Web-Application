@@ -8,7 +8,7 @@ import ua.huryn.elasticsearch.entity.db.Review;
 
 import java.util.List;
 
-public interface ReviewDbRepository extends JpaRepository<Review,Integer> {
+public interface ReviewDbRepository extends JpaRepository<Review,Long> {
     @Query("SELECT r FROM Review r")
     List<Review> getAll();
 
@@ -16,4 +16,5 @@ public interface ReviewDbRepository extends JpaRepository<Review,Integer> {
             "FROM review rev\n" +
             "WHERE rev.restaurant_id = :restaurant_id")
     List<Review> getReviewByRestaurantId(@Param("restaurant_id") Long restaurantId);
+
 }

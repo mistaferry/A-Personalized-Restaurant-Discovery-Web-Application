@@ -1,6 +1,8 @@
 package ua.huryn.elasticsearch.repository.db;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ua.huryn.elasticsearch.entity.db.Dish;
@@ -20,4 +22,15 @@ public interface IngredientDbRepository extends JpaRepository<Ingredient, Long> 
             "where d.dish_id = :dish_id")
     Optional<List<Ingredient>> findIngredientsByDishId(@Param("dish_id") Long dish_id);
 
+    Ingredient findByName(String name);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Ingredient i SET i.name = :name WHERE i.id = :id")
+    void updateIngredientById(@Param("id") Long ingredientId, @Param("name") String name);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "DELETE FROM dish_ingredient di WHERE di.dish_id = :dish_id AND di.ingredient_id = :ingredient_id")
+    void deleteIngredientToDish(@Param("dish_id") Long dishId, @Param("ingredient_id") Long ingredientId);
 }

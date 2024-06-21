@@ -1,18 +1,20 @@
 package ua.huryn.elasticsearch;
 
+import com.vaadin.flow.component.UI;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import ua.huryn.elasticsearch.config.GeneralProperties;
+import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.service.RestaurantService;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Component
 @Slf4j
 @AllArgsConstructor
-public class DbOperationRunner implements CommandLineRunner {
+public class DbOperationRunner extends UI implements CommandLineRunner  {
     private final RestaurantService restaurantService;
     private final GeneralProperties generalProperties;
 

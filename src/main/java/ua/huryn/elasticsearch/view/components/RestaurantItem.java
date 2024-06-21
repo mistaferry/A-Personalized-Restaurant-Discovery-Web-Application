@@ -13,6 +13,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
+import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.view.RestaurantInfoView;
 
 import java.io.FileInputStream;
@@ -105,7 +106,11 @@ public class RestaurantItem {
             } catch (FileNotFoundException e) {
                 log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
             }
-            return null;
+            try {
+                return new FileInputStream(localDirectory + "/db_data/restaurant_images/none.jpg");
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         });
         return new Image(resource, "Image");
     }

@@ -15,9 +15,9 @@ public class RestaurantModel {
     @Id
     @Field(type = FieldType.Long, name = "restaurant_id")
     private Long restaurantId;
-    @Field(type = FieldType.Keyword, name = "search_string_ukr")
+    @Field(type = FieldType.Text, name = "search_string_ukr", analyzer = "ukrainian")
     private String searchFieldUa;
-    @Field(type = FieldType.Keyword, name = "search_string_eng")
+    @Field(type = FieldType.Text, name = "search_string_eng", analyzer = "english")
     private String searchFieldEn;
 }
 

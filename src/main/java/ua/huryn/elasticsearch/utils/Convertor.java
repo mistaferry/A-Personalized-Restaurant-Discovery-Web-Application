@@ -78,6 +78,8 @@ public final class Convertor {
                 .build();
     }
 
+
+
     public static CategoryDTO convertToDTO(Category category) {
         return CategoryDTO.builder()
                 .categoryId(category.getId())
@@ -105,6 +107,7 @@ public final class Convertor {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .picture(user.getPicture())
+                .role(user.getRole().getName())
                 .build();
     }
 

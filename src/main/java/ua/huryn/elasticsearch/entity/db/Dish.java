@@ -30,7 +30,7 @@ public class Dish {
     @Column(name = "cuisine_type")
     private String cuisineType;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "dish_ingredient",
             joinColumns = @JoinColumn(name = "dish_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id"))

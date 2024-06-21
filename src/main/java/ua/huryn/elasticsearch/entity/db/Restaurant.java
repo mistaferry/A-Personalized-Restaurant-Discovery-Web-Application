@@ -37,14 +37,14 @@ public class Restaurant {
     private String photoRef;
     @Column(name = "cuisine_type")
     private String cuisineType;
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "restaurant_category",
             joinColumns = @JoinColumn(name = "restaurant_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     @ToString.Exclude
     List<Category> categories;
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "restaurant_dish",
             joinColumns = @JoinColumn(name = "restaurant_id"),

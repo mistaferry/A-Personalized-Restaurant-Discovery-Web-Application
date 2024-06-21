@@ -6,22 +6,23 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.messages.MessageInput;
-import com.vaadin.flow.component.messages.MessageInputI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import lombok.Getter;
 import lombok.Setter;
+import ua.huryn.elasticsearch.entity.dto.DishDTO;
+import ua.huryn.elasticsearch.entity.dto.IngredientDTO;
 import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import com.vaadin.flow.component.textfield.TextField;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
+
+import static org.reflections.Reflections.log;
 
 @Getter
 @Setter
@@ -48,6 +49,7 @@ public class Filters {
     private Runnable onSave;
     private Button reviewSearchButton;
     private TextField reviewKeywordInput;
+    private Button mapsButton;
 
 
     public Filters(RestaurantService restaurantService, DishService dishService, IngredientsService ingredientsService) {
@@ -66,18 +68,32 @@ public class Filters {
         this.partOfDishCheckbox = new CheckboxGroup<>();
         this.reviewSearchButton = new Button("Пошук");
         this.reviewKeywordInput = new TextField();
+        this.mapsButton = new Button("Переглянути карту");
 
         setupDishElementsListeners();
         setupIngredientElementsListeners();
+        dishesCheckboxListener();
+        ingredientsCheckboxListener();
     }
 
 
     public Div createFiltersDiv() {
         Div filtersDiv = new Div();
         filtersDiv.addClassNames("filters");
-        filtersDiv.add(createCuisineFilter(), createRatingFilter(), createRouteFilter(), createPriceFilter(), createDishesFilter(), createIngredientsFilter(), createReviewFilter());
+        filtersDiv.add(addMapComponent(), createCuisineFilter(), createRatingFilter(), createRouteFilter(), createPriceFilter(), createDishesFilter(), createIngredientsFilter(), createReviewFilter());
 
         return filtersDiv;
+    }
+
+    private Div addMapComponent() {
+        Div cuisineTypeDiv = new Div();
+        cuisineTypeDiv.setWidth("100%");
+        cuisineTypeDiv.setHeight("60px");
+        Anchor anchor = new Anchor("https://www.google.com/maps", "Переглянути карту");
+        anchor.setTarget("_blank");
+        cuisineTypeDiv.add(anchor);
+
+        return cuisineTypeDiv;
     }
 
     private Div createCuisineFilter() {
@@ -153,7 +169,7 @@ public class Filters {
         routeDiv.addClassNames("main-div");
 
         Div checkboxContainer = new Div();
-        checkboxContainer.addClassNames("d-flex flex-wrap justify-content-between pd-2");
+        checkboxContainer.addClassNames("d-flex flex-wrap justify-content-between flex-column pd-2");
 
         routesDeparturePoint.setLabel("Відстань");
         String regexPattern = "^[a-zA-Zа-яА-ЯїЇіІєЄ0-9 .]+, [0-9]{1,3}$";
@@ -171,7 +187,7 @@ public class Filters {
         Map<Integer, String> checkboxValues = new HashMap<>();
         checkboxValues.put(2, "Пішки");
         checkboxValues.put(1, "Машина");
-        checkboxValues.put(0, "Географічна віддаленість");
+        checkboxValues.put(0, "Віддаленість");
 
         routeCheckbox.setItems(2, 1, 0);
         routeCheckbox.setItemLabelGenerator(checkboxValues::get);
@@ -188,31 +204,35 @@ public class Filters {
         dishDiv.addClassNames("main-div");
 
         Div dishesContainer = new Div();
-        dishesContainer.addClassNames("d-flex");
+        dishesContainer.addClassNames("d-flex flex-wrap justify-content-between");
 
         Map<Long, String> allDishes = dishService.getAllDishesNames();
         configureDishesCheckbox(allDishes);
-
-        List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(allDishes.values().toArray(new String[0]), 0, 4));
-        partOfDishCheckbox.setLabel("Страви");
-        partOfDishCheckbox.setItems(partOfValues);
-        partOfDishCheckbox.addClassName("flex-column");
-        dishesContainer.add(partOfDishCheckbox);
-        dishDiv.add(dishesContainer);
-
-        Dialog dialog = addDishesDialogElement();
-        Button button = new Button("Показати всі", e -> dialog.open());
-        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-
-        dishDiv.add(dialog, button);
+        dishDiv.add(dishComboBox);
         return dishDiv;
     }
 
     private void configureDishesCheckbox(Map<Long, String> allDishes) {
-        dishesCheckbox.setLabel("Страви");
-        dishesCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
-        dishesCheckbox.setItems(allDishes.values());
-        dishComboBox.setItems(allDishes.values());
+        dishComboBox.setLabel("Страви");
+    }
+
+    public void dishesCheckboxListener(){
+        dishComboBox.addValueChangeListener(event -> {
+            String input = event.getValue();
+        });
+
+        dishComboBox.setItems(query -> {
+            String filter = query.getFilter().orElse("");
+            int limit = query.getLimit();
+            int offset = query.getOffset();
+            List<String> dishDetails = dishService.getDishDTOBySearch(filter)
+                    .stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .map(DishDTO::getName)
+                    .toList();
+            return dishDetails.stream();
+        });
     }
 
     public Dialog addDishesDialogElement(){
@@ -259,27 +279,31 @@ public class Filters {
 
         Map<Long, String> checkboxValues = ingredientsService.getAllIngredients();
         configureIngredientsCheckbox(checkboxValues);
-
-        List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(checkboxValues.values().toArray(new String[0]), 1, 4));
-        partOfIngredientCheckbox.setLabel("Інгредієнти");
-        partOfIngredientCheckbox.setItems(partOfValues);
-        partOfIngredientCheckbox.addClassNames("custom-checkbox");
-        ingredientsContainer.add(partOfIngredientCheckbox);
-        ingredientsDiv.add(ingredientsContainer);
-
-        Dialog dialog = addIngredientsDialogElement();
-        Button button = new Button("Показати всі", e -> dialog.open());
-        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-        ingredientsDiv.add(dialog, button);
-
+        ingredientsDiv.add(ingredientsComboBox);
         return ingredientsDiv;
     }
 
     private void configureIngredientsCheckbox(Map<Long, String> checkboxValues) {
-        ingredientsCheckbox.setLabel("Інгредієнти");
-        ingredientsCheckbox.addClassNames("custom-checkbox");
-        ingredientsCheckbox.setItems(checkboxValues.values());
-        ingredientsCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+        ingredientsComboBox.setLabel("Інгредієнти");
+    }
+
+    public void ingredientsCheckboxListener(){
+        ingredientsComboBox.addValueChangeListener(event -> {
+            String input = event.getValue();
+        });
+
+        ingredientsComboBox.setItems(query -> {
+            String filter = query.getFilter().orElse("");
+            int limit = query.getLimit();
+            int offset = query.getOffset();
+            List<String> ingredientsDetails = ingredientsService.getIngredientDTOBySearch(filter)
+                    .stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .map(IngredientDTO::getName)
+                    .toList();
+            return ingredientsDetails.stream();
+        });
     }
 
     public Dialog addIngredientsDialogElement(){
@@ -324,11 +348,12 @@ public class Filters {
         priceDiv.addClassNames("main-div");
         Div inputContainer = new Div();
         inputContainer.addClassNames("d-flex flex-wrap justify-content-between");
-//        inputContainer.getStyle().setMaxWidth("100%");
 
         reviewKeywordInput.setLabel("Відгуки");
         reviewKeywordInput.setClassName("review-text");
         reviewKeywordInput.setPlaceholder("Ключові слова");
+        reviewKeywordInput.setWidth("100%");
+        reviewSearchButton.setWidth("100%");
 
         inputContainer.add(reviewKeywordInput, reviewSearchButton);
         priceDiv.add(inputContainer);

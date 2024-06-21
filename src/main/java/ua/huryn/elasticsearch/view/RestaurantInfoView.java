@@ -15,12 +15,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import ua.huryn.elasticsearch.MainView;
 import ua.huryn.elasticsearch.config.GeneralProperties;
 import ua.huryn.elasticsearch.entity.db.Review;
 import ua.huryn.elasticsearch.entity.db.User;
 import ua.huryn.elasticsearch.entity.dto.RestaurantDTO;
 import ua.huryn.elasticsearch.entity.dto.ReviewDTO;
+import ua.huryn.elasticsearch.repository.db.ReviewDbRepository;
 import ua.huryn.elasticsearch.repository.db.UserDbRepository;
 import ua.huryn.elasticsearch.service.RestaurantService;
 import ua.huryn.elasticsearch.service.ReviewService;
@@ -38,6 +38,7 @@ import static org.reflections.Reflections.log;
 @Route(value = "restaurant", layout = MainView.class)
 @PermitAll
 public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
+    private final ReviewDbRepository reviewDbRepository;
     private Long restaurantId;
     private RestaurantDTO restaurant;
     private final RestaurantService restaurantService;
@@ -49,7 +50,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     private Div reviewDiv;
     private MessageInput input;
 
-    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository, GeneralProperties generalProperties) {
+    public RestaurantInfoView(RestaurantService restaurantService, ReviewService reviewService, UserDbRepository userDbRepository, GeneralProperties generalProperties, ReviewDbRepository reviewDbRepository) {
         this.restaurantService = restaurantService;
         this.reviewService = reviewService;
         this.userDbRepository = userDbRepository;
@@ -58,6 +59,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
         this.generalProperties = generalProperties;
         this.localDirectory=generalProperties.getLocalDirectory();
         inputMessageListener();
+        this.reviewDbRepository = reviewDbRepository;
     }
 
     @Override
@@ -94,12 +96,16 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
 
         Div restaurantName = new Div(new Span(restaurant.getName()));
         restaurantName.getStyle().setFontSize("24px");
+        restaurantData.add(restaurantName);
 
-        String cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
-        Div cuisineType = new Div(new Span(cuisine + " кухня"));
-        cuisineType.getStyle().setColor("#003399");
+        String cuisine = restaurant.getCuisineType();
+        if(cuisine != null && !cuisine.isEmpty()) {
+            cuisine = restaurant.getCuisineType().substring(0, 1).toUpperCase() + restaurant.getCuisineType().substring(1);
+            Div cuisineType = new Div(new Span(cuisine + " кухня"));
+            cuisineType.getStyle().setColor("#003399");
+            restaurantData.add(cuisineType);
+        }
 
-        restaurantData.add(restaurantName, cuisineType);
 
         String restaurantWebsite = restaurant.getWebsite();
         if (restaurantWebsite != null && !restaurantWebsite.equals("null")) {
@@ -112,7 +118,8 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
         }
 
         Div address = new Div(new Span(restaurant.getAddress()));
-        Div rating = new Div(new Span("Рейтинг - " + restaurant.getRating() + " ⭐"));
+        long ratingValue = Math.round(restaurant.getRating());
+        Div rating = new Div(new Span("Рейтинг - ⭐" + ratingValue));
         restaurantData.add(address, rating);
 
         downPartDiv.add(restaurantData);
@@ -122,19 +129,31 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
     }
 
     private @NotNull Image getImage() {
-        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+//        String scr = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
+//
+//        StreamResource resource = new StreamResource("image.jpg", () -> {
+//            try {
+//                return new FileInputStream(scr);
+//            } catch (FileNotFoundException e) {
+//                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+//            }
+//            return null;
+//        });
+//        Image image = new Image(resource, "Image");
+//        image.addClassNames("fit-c");
+//        return image;
+        String imagePath = localDirectory + "/db_data/restaurant_images/" + restaurant.getPlaceId() + "_image.jpg";
 
-        StreamResource resource = new StreamResource("image.jpg", () -> {
-            try {
-                return new FileInputStream(scr);
-            } catch (FileNotFoundException e) {
-                log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
-            }
-            return null;
-        });
-        Image image = new Image(resource, "Image");
-        image.addClassNames("fit-c");
-        return image;
+        try {
+            FileInputStream fileInputStream = new FileInputStream(imagePath);
+            StreamResource resource = new StreamResource("image.jpg", () -> fileInputStream);
+            Image image = new Image(resource, "Image");
+            image.addClassNames("fit-c");
+            return image;
+        } catch (FileNotFoundException e) {
+            log.error("No image found for restaurant placeId - " + restaurant.getPlaceId());
+            return new Image("https://t3.ftcdn.net/jpg/03/24/73/92/360_F_324739203_keeq8udvv0P2h1MLYJ0GLSlTBagoXS48.jpg", "Image");
+        }
     }
 
     public Div reviewsDiv() {
@@ -183,7 +202,7 @@ public class RestaurantInfoView extends Div implements HasUrlParameter<Long> {
             review.setRestaurant(Convertor.convertToEntity(restaurant));
             review.setTime(Timestamp.from(newMessage.getTime()));
             review.setUser(user);
-            reviewService.saveToDb(review);
+            reviewDbRepository.save(review);
             removeAll();
             add(pageDiv());
         });

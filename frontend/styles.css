@@ -6,10 +6,20 @@
 .search-section{
     width: 100%;
     align-items: center;
+    flex-direction: column;
 }
 .search-field{
     width: 50%;
     padding: 2px;
+}
+
+.admin-search-field{
+    width: 80%;
+    margin-top: 20px;
+}
+
+.delete-field{
+    width: 80%;
 }
 
 .search-button{
@@ -175,4 +185,74 @@ vaadin-checkbox{
 
 .review-text{
     width: 60%;
+}
+
+/* admin page */
+
+.admin-full-div{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-page-function{
+    width: 90%;
+    height: 90%;
+    /*background: #0074d9;*/
+    /*border-color: #000;*/
+    flex-direction: column;
+}
+
+.admin-dish-info{
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    /*background: aqua;*/
+}
+
+.admin-dish-info > * {
+    width: 20%;
+    /*background: blueviolet;*/
+    border: black;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.delete-button{
+    margin-top: 24px;
+    background-color: white;
+}
+
+@media (max-width: 720px) {
+    .menu-div{
+        flex-direction: column;
+    }
+    .down-section{
+        flex-direction: column;
+    }
+    .filters{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-div{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .curr-restaurant-info-div{
+        margin: 0;
+        width: 100%;
+        padding: 3%;
+    }
+    .basic{
+        flex-direction: column
+    }
+    .review-div{
+        margin: 0;
+        padding: 3%;
+        width: 100%;
+    }
 }
