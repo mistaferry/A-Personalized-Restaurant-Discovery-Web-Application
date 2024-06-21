@@ -107,6 +107,26 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
+    public void addDishToRestaurant(Long dish_id, Long restaurant_id) {
+        dishDbRepository.addIngredientToDish(dish_id, restaurant_id);
+    }
+
+    @Override
+    public void deleteDishFromRestaurant(Long dish_id, Long restaurant_id) {
+        dishDbRepository.deleteDishFromRestaurant(dish_id, restaurant_id);
+    }
+
+    @Override
+    public void addIngredientToDish(Long dish_id, Long ingredient_id) {
+        dishDbRepository.addIngredientToDish(dish_id, ingredient_id);
+    }
+
+    @Override
+    public void addDish(String name, Double price, Long dishType, String cuisineType) {
+        dishDbRepository.addDish(name, price, dishType, cuisineType);
+    }
+
+    @Override
     public DishDTO getByNameAndPrice(String info){
         List<DishDTO> dishDTOS = getAll();
         for (DishDTO dishDTO: dishDTOS){
@@ -116,6 +136,12 @@ public class DishServiceImpl implements DishService {
             }
         }
         return null;
+    }
+
+    @Override
+    public List<DishDTO> getByNameAndPrice(String name, Double price) {
+        List<Dish> dishes = dishDbRepository.findByNameAndPrice(name, price);
+        return Convertor.convertDishEntityListToDTO(dishes);
     }
 
 }

@@ -107,6 +107,7 @@ public final class Convertor {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .picture(user.getPicture())
+                .role(user.getRole().getName())
                 .build();
     }
 

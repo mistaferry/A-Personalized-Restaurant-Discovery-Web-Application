@@ -2,6 +2,7 @@ package ua.huryn.elasticsearch.entity.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import ua.huryn.elasticsearch.entity.db.Role;
 
 import java.io.Serializable;
 
@@ -13,4 +14,5 @@ public class UserDTO  implements Serializable {
     private String username;
     private String email;
     private String picture;
+    private String role;
 }

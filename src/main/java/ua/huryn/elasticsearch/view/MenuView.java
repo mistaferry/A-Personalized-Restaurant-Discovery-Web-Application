@@ -35,7 +35,7 @@ import static ua.huryn.elasticsearch.utils.QueryParameter.getIntegerSetFromQuery
 import static ua.huryn.elasticsearch.utils.QueryParameter.getStringSetFromQueryParameters;
 
 @PageTitle("Menu")
-@Route(value = "", layout = MainView.class)
+@Route(value = "/user/menu", layout = MainView.class)
 @CssImport("styles.css")
 @PermitAll
 @StyleSheet("https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")

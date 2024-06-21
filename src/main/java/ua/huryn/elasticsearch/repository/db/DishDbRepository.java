@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ua.huryn.elasticsearch.entity.db.Dish;
-import ua.huryn.elasticsearch.entity.db.Ingredient;
-import ua.huryn.elasticsearch.entity.db.Restaurant;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +29,38 @@ public interface DishDbRepository extends JpaRepository<Dish,Long> {
             "where r.restaurant_id = :restaurant_id")
     List<Dish> findByRestaurantId(@Param("restaurant_id") Long restaurantId);
 
+    @Query(nativeQuery = true, value = "SELECT MAX(dish_id) FROM dish")
+    Long findMaxId();
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true, value = "INSERT INTO dish (name, price, dish_type, cuisine_type)\n" +
+            "    VALUE (:name, :price, :dish_type, :cuisine_type)")
+    void addDish(@Param("name") String name, @Param("price") Double price, @Param("dish_type") Long dishType, @Param("cuisine_type") String cuisineType);
+
+    @EntityGraph(attributePaths = {"ingredients", "dishType"})
+    @Query("SELECT d FROM Dish d where d.name=:name and d.price=:price")
+    List<Dish> findByNameAndPrice(@Param("name") String name, @Param("price") Double price);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Dish d SET d.name = :name, d.price = :price WHERE d.id = :id")
+    void updateDishById(@Param("id") Long dishId, @Param("name") String name, @Param("price") Double price);
+
     @Transactional
     @Modifying
     @Query(nativeQuery = true, value = "INSERT INTO dish_ingredient (dish_id, ingredient_id)\n" +
             "    VALUE (:dish_id, :ingredient_id)")
     void addIngredientToDish(@Param("dish_id") Long dish_id, @Param("ingredient_id") Long ingredient_id);
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true, value = "INSERT INTO restaurant_dish (dish_id, restaurant_id)\n" +
+            "    VALUE (:dish_id, :restaurant_id)")
+    void addDishToRestaurant(@Param("dish_id") Long dish_id, @Param("restaurant_id") Long restaurant_id);
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true, value = "DELETE FROM restaurant_dish rd WHERE rd.dish_id = :dish_id AND rd.restaurant_id = :restaurant_id")
+    void deleteDishFromRestaurant(@Param("dish_id") Long dishId, @Param("restaurant_id") Long restaurantId);
 }

@@ -12,6 +12,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import lombok.Getter;
 import lombok.Setter;
+import ua.huryn.elasticsearch.entity.dto.DishDTO;
+import ua.huryn.elasticsearch.entity.dto.IngredientDTO;
 import ua.huryn.elasticsearch.service.DishService;
 import ua.huryn.elasticsearch.service.IngredientsService;
 import ua.huryn.elasticsearch.service.RestaurantService;
@@ -19,6 +21,8 @@ import com.vaadin.flow.component.textfield.TextField;
 
 import java.util.*;
 import java.util.List;
+
+import static org.reflections.Reflections.log;
 
 @Getter
 @Setter
@@ -68,6 +72,8 @@ public class Filters {
 
         setupDishElementsListeners();
         setupIngredientElementsListeners();
+        dishesCheckboxListener();
+        ingredientsCheckboxListener();
     }
 
 
@@ -202,26 +208,31 @@ public class Filters {
 
         Map<Long, String> allDishes = dishService.getAllDishesNames();
         configureDishesCheckbox(allDishes);
-
-        List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(allDishes.values().toArray(new String[0]), 0, 4));
-        partOfDishCheckbox.setLabel("Страви");
-        partOfDishCheckbox.setItems(partOfValues);
-        dishesContainer.add(partOfDishCheckbox);
-        dishDiv.add(dishesContainer);
-
-        Dialog dialog = addDishesDialogElement();
-        Button button = new Button("Показати всі", e -> dialog.open());
-        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-
-        dishDiv.add(dialog, button);
+        dishDiv.add(dishComboBox);
         return dishDiv;
     }
 
     private void configureDishesCheckbox(Map<Long, String> allDishes) {
-        dishesCheckbox.setLabel("Страви");
-        dishesCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
-        dishesCheckbox.setItems(allDishes.values());
-        dishComboBox.setItems(allDishes.values());
+        dishComboBox.setLabel("Страви");
+    }
+
+    public void dishesCheckboxListener(){
+        dishComboBox.addValueChangeListener(event -> {
+            String input = event.getValue();
+        });
+
+        dishComboBox.setItems(query -> {
+            String filter = query.getFilter().orElse("");
+            int limit = query.getLimit();
+            int offset = query.getOffset();
+            List<String> dishDetails = dishService.getDishDTOBySearch(filter)
+                    .stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .map(DishDTO::getName)
+                    .toList();
+            return dishDetails.stream();
+        });
     }
 
     public Dialog addDishesDialogElement(){
@@ -268,27 +279,31 @@ public class Filters {
 
         Map<Long, String> checkboxValues = ingredientsService.getAllIngredients();
         configureIngredientsCheckbox(checkboxValues);
-
-        List<String> partOfValues = Arrays.asList(Arrays.copyOfRange(checkboxValues.values().toArray(new String[0]), 1, 4));
-        partOfIngredientCheckbox.setLabel("Інгредієнти");
-        partOfIngredientCheckbox.setItems(partOfValues);
-        partOfIngredientCheckbox.addClassNames("custom-checkbox");
-        ingredientsContainer.add(partOfIngredientCheckbox);
-        ingredientsDiv.add(ingredientsContainer);
-
-        Dialog dialog = addIngredientsDialogElement();
-        Button button = new Button("Показати всі", e -> dialog.open());
-        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-        ingredientsDiv.add(dialog, button);
-
+        ingredientsDiv.add(ingredientsComboBox);
         return ingredientsDiv;
     }
 
     private void configureIngredientsCheckbox(Map<Long, String> checkboxValues) {
-        ingredientsCheckbox.setLabel("Інгредієнти");
-        ingredientsCheckbox.addClassNames("custom-checkbox");
-        ingredientsCheckbox.setItems(checkboxValues.values());
-        ingredientsCheckbox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+        ingredientsComboBox.setLabel("Інгредієнти");
+    }
+
+    public void ingredientsCheckboxListener(){
+        ingredientsComboBox.addValueChangeListener(event -> {
+            String input = event.getValue();
+        });
+
+        ingredientsComboBox.setItems(query -> {
+            String filter = query.getFilter().orElse("");
+            int limit = query.getLimit();
+            int offset = query.getOffset();
+            List<String> ingredientsDetails = ingredientsService.getIngredientDTOBySearch(filter)
+                    .stream()
+                    .skip(offset)
+                    .limit(limit)
+                    .map(IngredientDTO::getName)
+                    .toList();
+            return ingredientsDetails.stream();
+        });
     }
 
     public Dialog addIngredientsDialogElement(){

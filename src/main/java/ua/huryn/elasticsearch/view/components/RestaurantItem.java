@@ -28,12 +28,10 @@ import static org.reflections.Reflections.log;
 public class RestaurantItem {
     private final String localDirectory;
     private final GeneralProperties generalProperties;
-//    private final RestaurantService restaurantService;
 
-    public RestaurantItem(GeneralProperties generalProperties/*, RestaurantService restaurantService*/) {
+    public RestaurantItem(GeneralProperties generalProperties) {
         this.generalProperties = generalProperties;
         this.localDirectory=generalProperties.getLocalDirectory();
-//        this.restaurantService = restaurantService;
     }
 
 
